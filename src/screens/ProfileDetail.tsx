@@ -53,7 +53,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
   const color = levelColor[profile.prospectiveLevel];
 
   return (
-    <div style={{ padding: '24px', maxWidth: 1000, margin: '0 auto' }}>
+    <div style={{ padding: '24px', maxWidth: 1100, margin: '0 auto' }}>
       {/* Back button */}
       <button
         onClick={onBack}
@@ -76,21 +76,32 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
         Back
       </button>
 
-      {/* Two-column layout */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', marginBottom: 24 }}>
-        {/* Photo */}
-        <div style={{ position: 'relative' }}>
-          <img
-            src={profile.photo}
-            alt={profile.name}
-            style={{ width: '100%', height: 380, objectFit: 'cover', borderRadius: 16, display: 'block' }}
-          />
-        </div>
+      {/* Hero card — photo + identity side by side inside one card */}
+      <div style={{
+        background: 'var(--card)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        display: 'flex',
+        marginBottom: 20,
+        minHeight: 400,
+      }}>
+        {/* Photo — flush left, fills card height */}
+        <img
+          src={profile.photo}
+          alt={profile.name}
+          style={{
+            width: '40%',
+            minWidth: 220,
+            objectFit: 'cover',
+            display: 'block',
+            flexShrink: 0,
+          }}
+        />
 
-        {/* Identity card */}
-        <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
-          {/* Name + level */}
-          <div className="flex items-center justify-between mb-1">
+        {/* Identity + scores + tags + about */}
+        <div style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+          {/* Name + level pill */}
+          <div className="flex items-start justify-between" style={{ marginBottom: 4, gap: 12 }}>
             <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>{profile.name}</span>
             <span style={{
               background: `${color}38`,
@@ -102,6 +113,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
               color,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
+              whiteSpace: 'nowrap',
             }}>
               {profile.prospectiveLevel} &nbsp; {profile.prospectiveScore}
             </span>
@@ -111,7 +123,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
           </p>
 
           {/* Score row */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-3" style={{ marginBottom: 16 }}>
             <div style={{ background: 'rgba(251,191,36,0.08)', borderRadius: 12, padding: '12px 16px', textAlign: 'center' }}>
               <p style={{ fontSize: 28, fontWeight: 700, color: '#fbbf24', marginBottom: 2 }}>{profile.allureScore}</p>
               <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Allure</p>
@@ -129,26 +141,35 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
             ))}
           </div>
 
-          <div style={{ height: 1, background: 'var(--border)', marginBottom: 4 }} />
+          <div style={{ height: 1, background: 'var(--border)', marginBottom: 16 }} />
 
           {/* About */}
-          <SectionTitle title="About" />
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 4 }}>{profile.about}</p>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>About</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{profile.about}</p>
+        </div>
+      </div>
 
-          {/* Vitals */}
-          <SectionTitle title="Vitals" />
+      {/* Detail sections — horizontal row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
+        {/* Vitals */}
+        <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Vitals</p>
           {profile.vitals.map((v, i) => (
             <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === profile.vitals.length - 1} />
           ))}
+        </div>
 
-          {/* Life */}
-          <SectionTitle title="Life" />
+        {/* Life */}
+        <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Life</p>
           {profile.life.map((v, i) => (
             <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === profile.life.length - 1} />
           ))}
+        </div>
 
-          {/* Relationship Goals */}
-          <SectionTitle title="Relationship Goals" />
+        {/* Relationship Goals */}
+        <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Relationship Goals</p>
           {profile.relationshipGoals.map((v, i) => (
             <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === profile.relationshipGoals.length - 1} />
           ))}
@@ -157,7 +178,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
 
       {/* Conversation history */}
       <div style={{ background: 'var(--card)', borderRadius: 16, padding: 24 }}>
-        <div className="flex items-center gap-3 mb-20" style={{ marginBottom: 20 }}>
+        <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
           <MessageSquare size={20} style={{ color: '#c084fc' }} />
           <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>Conversation</h2>
           <span style={{
@@ -194,7 +215,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
                 )}
                 <div style={{ display: 'flex', justifyContent: isHer ? 'flex-start' : 'flex-end' }}>
                   <div style={{
-                    maxWidth: '78%',
+                    maxWidth: '70%',
                     padding: '10px 15px',
                     borderRadius: 18,
                     borderBottomLeftRadius: isHer ? 4 : 18,
