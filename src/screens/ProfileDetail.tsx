@@ -1,6 +1,6 @@
 import { ArrowLeft, Ruler, Star, GraduationCap, Briefcase, Wine, Cigarette, Dumbbell, Dog, Heart, Baby, Home, MessageSquare } from 'lucide-react';
-import type { Profile } from '../data/mockData';
-import { levelColor } from '../data/mockData';
+import type { Profile } from '../types';
+import { levelColor } from '../types';
 import PersonalityTag from '../components/PersonalityTag';
 import ScoreBadge from '../components/ScoreBadge';
 
@@ -145,7 +145,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
 
           {/* About */}
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>About</p>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{profile.about}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{profile.bio}</p>
         </div>
       </div>
 
@@ -195,7 +195,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
 
         <div style={{ maxWidth: 680 }}>
           {profile.conversation.map((msg, i) => {
-            const isHer = msg.role === 'her';
+            const isHer = msg.role === 'user';
             const prevRole = i > 0 ? profile.conversation[i - 1].role : null;
             const showLabel = prevRole !== msg.role;
             return (
@@ -210,7 +210,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
                     marginBottom: 5,
                     textAlign: isHer ? 'left' : 'right',
                   }}>
-                    {isHer ? `Her — ${msg.timestamp}` : `You — ${msg.timestamp}`}
+                    {isHer ? 'Her' : 'You'}
                   </p>
                 )}
                 <div style={{ display: 'flex', justifyContent: isHer ? 'flex-start' : 'flex-end' }}>
@@ -225,7 +225,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
                     fontSize: 14,
                     lineHeight: 1.55,
                   }}>
-                    {msg.text}
+                    {msg.content}
                   </div>
                 </div>
               </div>

@@ -1,10 +1,10 @@
 import { Crown, Medal, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
-import { MOCK_PROFILES } from '../data/mockData';
 import PersonalityTag from '../components/PersonalityTag';
-import type { Profile } from '../data/mockData';
+import type { Profile } from '../types';
 
 interface RankingProps {
+  profiles: Profile[];
   onSelectProfile: (profile: Profile) => void;
 }
 
@@ -30,11 +30,11 @@ function rankBorderColor(rank: number): string {
 
 type SortKey = 'score' | 'name';
 
-export default function Ranking({ onSelectProfile }: RankingProps) {
+export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
   const [sortKey, setSortKey] = useState<SortKey>('score');
   const [sortAsc, setSortAsc] = useState(false);
 
-  const sorted = [...MOCK_PROFILES].sort((a, b) => {
+  const sorted = [...profiles].sort((a, b) => {
     const valA = sortKey === 'score' ? a.allureScore : a.name;
     const valB = sortKey === 'score' ? b.allureScore : b.name;
     if (valA < valB) return sortAsc ? -1 : 1;

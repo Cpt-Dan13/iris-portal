@@ -4,10 +4,11 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 import { Crown, Medal } from 'lucide-react';
-import { MOCK_PROFILES, REPORT_DATA } from '../data/mockData';
-import type { Profile } from '../data/mockData';
+import { REPORT_DATA } from '../data/mockData';
+import type { Profile } from '../types';
 
 interface ReportsProps {
+  profiles: Profile[];
   onSelectProfile: (profile: Profile) => void;
 }
 
@@ -40,15 +41,15 @@ const customTooltipStyle = {
   fontSize: 13,
 };
 
-export default function Reports({ onSelectProfile }: ReportsProps) {
+export default function Reports({ profiles, onSelectProfile }: ReportsProps) {
   const [range, setRange] = useState<TimeRange>('week');
   const data = sliceData(range);
 
-  const byAllure = [...MOCK_PROFILES].sort((a, b) => b.allureScore - a.allureScore).slice(0, 5);
-  const byProspective = [...MOCK_PROFILES].sort((a, b) => b.prospectiveScore - a.prospectiveScore).slice(0, 5);
+  const byAllure = [...profiles].sort((a, b) => b.allureScore - a.allureScore).slice(0, 5);
+  const byProspective = [...profiles].sort((a, b) => (b.prospectiveScore ?? 0) - (a.prospectiveScore ?? 0)).slice(0, 5);
 
-  const avgScore = Math.round(MOCK_PROFILES.reduce((s, p) => s + p.allureScore, 0) / MOCK_PROFILES.length);
-  const highRate = Math.round((MOCK_PROFILES.filter(p => p.prospectiveLevel === 'HIGH').length / MOCK_PROFILES.length) * 100);
+  const avgScore = profiles.length ? Math.round(profiles.reduce((s, p) => s + p.allureScore, 0) / profiles.length) : 0;
+  const highRate = profiles.length ? Math.round((profiles.filter(p => p.prospectiveLevel === 'HIGH').length / profiles.length) * 100) : 0;
   const topPerformer = byAllure[0];
 
   return (

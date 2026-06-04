@@ -1,22 +1,25 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
-import { MOCK_PROFILES, levelColor } from '../data/mockData';
-import type { ProspectiveLevel, Profile } from '../data/mockData';
+import type { ProspectiveLevel, Profile } from '../types';
+import { levelColor } from '../types';
 import PersonalityTag from '../components/PersonalityTag';
 import TakeOverModal from '../components/TakeOverModal';
 import ScoreBadge from '../components/ScoreBadge';
 
 interface ProspectiveProps {
+  profiles: Profile[];
   onSelectProfile: (profile: Profile) => void;
 }
 
 const LEVELS: ProspectiveLevel[] = ['HIGH', 'MODERATE', 'LOW'];
 
-export default function Prospective({ onSelectProfile }: ProspectiveProps) {
+export default function Prospective({ profiles, onSelectProfile }: ProspectiveProps) {
   const [takeOverProfile, setTakeOverProfile] = useState<Profile | null>(null);
 
   const grouped = LEVELS.reduce<Record<ProspectiveLevel, Profile[]>>((acc, lvl) => {
-    acc[lvl] = MOCK_PROFILES.filter(p => p.prospectiveLevel === lvl);
+    acc[lvl] = profiles
+      .filter(p => p.prospectiveLevel === lvl)
+      .sort((a, b) => (b.prospectiveScore ?? 0) - (a.prospectiveScore ?? 0));
     return acc;
   }, { HIGH: [], MODERATE: [], LOW: [] });
 
