@@ -9,6 +9,7 @@ import Prospective from './screens/Prospective';
 import Reports from './screens/Reports';
 import ProfileDetail from './screens/ProfileDetail';
 import Login from './screens/Login';
+import Monitoring from './screens/Monitoring';
 import { useProfiles } from './hooks/useProfiles';
 import { useProfile } from './hooks/useProfile';
 import type { Profile } from './types';
@@ -35,6 +36,7 @@ function Dashboard() {
       case 'ranking':     return <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'prospective': return <Prospective profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'reports':     return <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
+      case 'monitoring':  return <Monitoring />;
     }
   };
 
