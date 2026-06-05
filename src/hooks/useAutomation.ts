@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export type AutomationStatus = 'idle' | 'pending' | 'running' | 'stopped';
 
-export type Duration = '3hours' | '8hours' | '1day' | '3days' | '1week';
+export type Duration = '15mins' | '3hours' | '8hours' | '1day' | '3days' | '1week';
 
 export function useAutomation() {
   const { user } = useAuth();

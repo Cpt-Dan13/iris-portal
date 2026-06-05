@@ -4,11 +4,12 @@ import { useAutomation } from '../hooks/useAutomation';
 import type { Duration } from '../hooks/useAutomation';
 
 const DURATION_OPTIONS: { id: Duration; label: string; description: string }[] = [
-  { id: '3hours', label: '3 Hours', description: 'Quick session — great for a test run' },
-  { id: '8hours', label: '8 Hours', description: 'Half-day sweep for active windows' },
-  { id: '1day',   label: '1 Day',   description: 'Short burst — ideal for testing' },
-  { id: '3days',  label: '3 Days',  description: 'Balanced run with solid coverage' },
-  { id: '1week',  label: '1 Week',  description: 'Full campaign for maximum reach' },
+  { id: '15mins', label: '15 Minutes', description: 'Quick test — one cycle then waits 15 mins' },
+  { id: '3hours', label: '3 Hours',   description: 'Runs a cycle every 3 hours' },
+  { id: '8hours', label: '8 Hours',   description: 'Runs a cycle every 8 hours' },
+  { id: '1day',   label: '1 Day',     description: 'Runs a cycle once per day' },
+  { id: '3days',  label: '3 Days',    description: 'Balanced run with solid coverage' },
+  { id: '1week',  label: '1 Week',    description: 'Full campaign for maximum reach' },
 ];
 
 export default function Activate() {
