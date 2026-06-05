@@ -1,7 +1,7 @@
 import { Rocket, Square, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-
-type Duration = '3hours' | '8hours' | '1day' | '3days' | '1week';
+import { useAutomation } from '../hooks/useAutomation';
+import type { Duration } from '../hooks/useAutomation';
 
 const DURATION_OPTIONS: { id: Duration; label: string; description: string }[] = [
   { id: '3hours', label: '3 Hours', description: 'Quick session — great for a test run' },
@@ -12,7 +12,8 @@ const DURATION_OPTIONS: { id: Duration; label: string; description: string }[] =
 ];
 
 export default function Activate() {
-  const [active, setActive] = useState(false);
+  const { status, loading, activate, stop } = useAutomation();
+  const active = status === 'running' || status === 'pending';
   const [duration, setDuration] = useState<Duration>('3days');
   const [open, setOpen] = useState(false);
 
@@ -79,31 +80,19 @@ export default function Activate() {
           color: active ? '#22c55e' : 'var(--text-secondary)',
         }}
       >
-        {active ? (
+        {status === 'running' ? (
           <>
-            <span
-              className="pulse-dot"
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: '#22c55e',
-                display: 'inline-block',
-              }}
-            />
+            <span className="pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
             Running
+          </>
+        ) : status === 'pending' ? (
+          <>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }} />
+            Pending...
           </>
         ) : (
           <>
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: 'var(--text-secondary)',
-                display: 'inline-block',
-              }}
-            />
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--text-secondary)', display: 'inline-block' }} />
             Idle
           </>
         )}
@@ -204,7 +193,8 @@ export default function Activate() {
 
       {/* Button */}
       <button
-        onClick={() => setActive(a => !a)}
+        onClick={() => active ? stop() : activate(duration)}
+        disabled={loading}
         style={{
           display: 'flex',
           alignItems: 'center',
