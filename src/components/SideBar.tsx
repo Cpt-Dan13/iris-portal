@@ -2,7 +2,7 @@ import { Rocket, Trophy, BarChart2, FileText, Settings, Sparkles, Sun, Moon, Men
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
-export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring';
+export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile';
 
 interface SidebarProps {
   active: Screen;
@@ -62,15 +62,25 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
 
       {/* User section */}
       <div className="px-3 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => { onNavigate('profile'); setMobileOpen(false); }}
+          className="flex items-center gap-2"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px',
+            borderRadius: 8, transition: 'background 0.15s',
+            outline: active === 'profile' ? '1px solid rgba(192,132,252,0.4)' : 'none',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(192,132,252,0.08)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+        >
           <img
             src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100"
             alt="avatar"
             className="rounded-full"
-            style={{ width: 36, height: 36, objectFit: 'cover', border: '2px solid var(--border)' }}
+            style={{ width: 36, height: 36, objectFit: 'cover', border: `2px solid ${active === 'profile' ? '#c084fc' : 'var(--border)'}` }}
           />
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>@user</span>
-        </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: active === 'profile' ? '#c084fc' : 'var(--text)' }}>@user</span>
+        </button>
         <div className="flex items-center gap-1">
           <button
             onClick={toggle}
