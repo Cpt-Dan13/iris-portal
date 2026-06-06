@@ -40,10 +40,9 @@ export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
     if (valA < valB) return sortAsc ? -1 : 1;
     if (valA > valB) return sortAsc ? 1 : -1;
     return 0;
-  });
+  }).slice(0, 20);
 
   const hero = sorted[0];
-  const rest = sorted.slice(1);
 
   const cycleSort = (key: SortKey) => {
     if (sortKey === key) {
