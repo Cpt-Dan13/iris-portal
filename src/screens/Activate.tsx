@@ -17,7 +17,9 @@ export default function Activate() {
   const active = status === 'running' || status === 'pending';
   const stopping = status === 'stopping';
   const busy = active || stopping;
-  const [duration, setDuration] = useState<Duration>('3days');
+  const [duration, setDuration] = useState<Duration>(
+    () => (localStorage.getItem('iris_duration') as Duration) ?? '3days'
+  );
   const [open, setOpen] = useState(false);
 
   return (
@@ -166,7 +168,7 @@ export default function Activate() {
               {DURATION_OPTIONS.map(opt => (
                 <button
                   key={opt.id}
-                  onClick={() => { setDuration(opt.id); setOpen(false); }}
+                  onClick={() => { setDuration(opt.id); localStorage.setItem('iris_duration', opt.id); setOpen(false); }}
                   style={{
                     width: '100%',
                     padding: '11px 16px',
