@@ -63,26 +63,29 @@ export default function Monitoring() {
   const [refreshing, setRefreshing] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
-  const logEndRef = useRef<HTMLDivElement>(null);
   const logIdRef = useRef(0);
 
   // WebSocket log stream
   useEffect(() => {
     let ws: WebSocket;
     let reconnectTimer: ReturnType<typeof setTimeout>;
+    let active = true;
 
     function connect() {
+      if (!active) return;
       setWsStatus('connecting');
       ws = new WebSocket(LOG_WS_URL);
 
-      ws.onopen = () => setWsStatus('connected');
+      ws.onopen = () => { if (active) setWsStatus('connected'); };
 
       ws.onmessage = (e) => {
+        if (!active) return;
         const entry = parseLogLine(e.data, logIdRef.current++);
-        setLogs(prev => [...prev.slice(-199), entry]);
+        setLogs(prev => [...prev.slice(-14), entry]);
       };
 
       ws.onclose = () => {
+        if (!active) return;
         setWsStatus('disconnected');
         reconnectTimer = setTimeout(connect, 3000);
       };
@@ -91,13 +94,9 @@ export default function Monitoring() {
     }
 
     connect();
-    return () => { ws?.close(); clearTimeout(reconnectTimer); };
+    return () => { active = false; ws?.close(); clearTimeout(reconnectTimer); };
   }, []);
 
-  // Auto-scroll logs
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
 
   async function fetchActivity() {
     setRefreshing(true);
@@ -215,7 +214,6 @@ export default function Monitoring() {
                 </div>
               ))
             )}
-            <div ref={logEndRef} />
           </div>
         </div>
 
