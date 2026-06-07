@@ -15,6 +15,8 @@ const DURATION_OPTIONS: { id: Duration; label: string; description: string }[] =
 export default function Activate() {
   const { status, loading, activate, stop } = useAutomation();
   const active = status === 'running' || status === 'pending';
+  const stopping = status === 'stopping';
+  const busy = active || stopping;
   const [duration, setDuration] = useState<Duration>('3days');
   const [open, setOpen] = useState(false);
 
@@ -73,15 +75,20 @@ export default function Activate() {
           gap: 8,
           padding: '6px 16px',
           borderRadius: 9999,
-          background: active ? 'rgba(34,197,94,0.12)' : 'rgba(161,161,161,0.12)',
-          border: `1px solid ${active ? 'rgba(34,197,94,0.35)' : 'rgba(161,161,161,0.25)'}`,
+          background: stopping ? 'rgba(239,68,68,0.12)' : active ? 'rgba(34,197,94,0.12)' : 'rgba(161,161,161,0.12)',
+          border: `1px solid ${stopping ? 'rgba(239,68,68,0.35)' : active ? 'rgba(34,197,94,0.35)' : 'rgba(161,161,161,0.25)'}`,
           marginBottom: 32,
           fontSize: 13,
           fontWeight: 600,
-          color: active ? '#22c55e' : 'var(--text-secondary)',
+          color: stopping ? '#ef4444' : active ? '#22c55e' : 'var(--text-secondary)',
         }}
       >
-        {status === 'running' ? (
+        {stopping ? (
+          <>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+            Stopping...
+          </>
+        ) : status === 'running' ? (
           <>
             <span className="pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
             Running
@@ -105,27 +112,27 @@ export default function Activate() {
           Duration
         </p>
         <button
-          onClick={() => !active && setOpen(o => !o)}
-          disabled={active}
+          onClick={() => !busy && setOpen(o => !o)}
+          disabled={busy}
           style={{
             width: '100%',
             padding: '12px 16px',
             borderRadius: 12,
             border: '1px solid var(--border)',
             background: 'var(--card)',
-            color: active ? 'var(--text-secondary)' : 'var(--text)',
+            color: busy ? 'var(--text-secondary)' : 'var(--text)',
             fontSize: 14,
             fontWeight: 600,
-            cursor: active ? 'not-allowed' : 'pointer',
+            cursor: busy ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 8,
-            opacity: active ? 0.6 : 1,
+            opacity: busy ? 0.6 : 1,
             transition: 'border-color 0.15s',
           }}
-          onMouseEnter={e => { if (!active) e.currentTarget.style.borderColor = '#c084fc'; }}
-          onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = 'var(--border)'; }}
+          onMouseEnter={e => { if (!busy) e.currentTarget.style.borderColor = '#c084fc'; }}
+          onMouseLeave={e => { if (!busy) e.currentTarget.style.borderColor = 'var(--border)'; }}
         >
           <span>{DURATION_OPTIONS.find(d => d.id === duration)?.label}</span>
           <ChevronDown
@@ -195,10 +202,11 @@ export default function Activate() {
       {/* Button */}
       <button
         onClick={() => {
+          if (stopping) return;
           console.log('[IRIS] Button clicked — active:', active, 'status:', status, 'duration:', duration);
           active ? stop() : activate(duration);
         }}
-        disabled={loading}
+        disabled={loading || stopping}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -207,42 +215,34 @@ export default function Activate() {
           borderRadius: 9999,
           fontSize: 16,
           fontWeight: 700,
-          cursor: 'pointer',
+          cursor: stopping ? 'not-allowed' : 'pointer',
           transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
           minWidth: 240,
           justifyContent: 'center',
-          ...(active
-            ? {
-                background: 'transparent',
-                border: '2px solid #ef4444',
-                color: '#ef4444',
-              }
-            : {
-                background: '#c084fc',
-                border: '2px solid #c084fc',
-                color: '#fff',
-                boxShadow: '0 4px 24px rgba(192,132,252,0.35)',
-              }),
+          ...(stopping
+            ? { background: 'transparent', border: '2px solid #ef4444', color: '#ef4444', opacity: 0.6 }
+            : active
+            ? { background: 'transparent', border: '2px solid #ef4444', color: '#ef4444' }
+            : { background: '#c084fc', border: '2px solid #c084fc', color: '#fff', boxShadow: '0 4px 24px rgba(192,132,252,0.35)' }),
         }}
         onMouseEnter={e => {
           const el = e.currentTarget;
-          el.style.transform = 'scale(1.02)';
-          if (!active) el.style.background = '#d4a0ff';
+          if (!busy) { el.style.transform = 'scale(1.02)'; el.style.background = '#d4a0ff'; }
         }}
         onMouseLeave={e => {
           const el = e.currentTarget;
           el.style.transform = 'scale(1)';
-          if (!active) el.style.background = '#c084fc';
+          if (!busy) el.style.background = '#c084fc';
         }}
       >
-        {active ? <Square size={18} /> : <Rocket size={18} />}
-        {active ? 'Stop IRIS' : 'Activate IRIS'}
+        {stopping ? <Square size={18} /> : active ? <Square size={18} /> : <Rocket size={18} />}
+        {stopping ? 'Stopping...' : active ? 'Stop IRIS' : 'Activate IRIS'}
       </button>
 
       {/* Subtle footer note */}
-      {active && (
+      {busy && (
         <p style={{ marginTop: 20, fontSize: 12, color: 'var(--text-secondary)', textAlign: 'center' }}>
-          IRIS is running in the background and processing your matches.
+          {stopping ? 'Sending stop signal to IRIS...' : 'IRIS is running in the background and processing your matches.'}
         </p>
       )}
     </div>

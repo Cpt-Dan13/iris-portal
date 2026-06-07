@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-export type AutomationStatus = 'idle' | 'pending' | 'running' | 'stopped';
+export type AutomationStatus = 'idle' | 'pending' | 'running' | 'stopping' | 'stopped';
 
 export type Duration = '15mins' | '3hours' | '8hours' | '1day' | '3days' | '1week';
 
@@ -75,6 +75,7 @@ export function useAutomation() {
     stoppedRef.current = true;
     console.log('[IRIS] stop() called, user:', user?.id ?? 'NULL', 'commandId:', commandId);
     if (!user || !commandId) { console.warn('[IRIS] stop() aborted — missing user or commandId'); return; }
+    setStatus('stopping');
     setLoading(true);
     const { data, error } = await supabase
       .from('automation_commands')
@@ -83,9 +84,9 @@ export function useAutomation() {
       .single();
 
     console.log('[IRIS] stop insert result — data:', data, 'error:', error);
-    setStatus('stopped');
     setCommandId(null);
     setLoading(false);
+    setTimeout(() => setStatus('idle'), 2000);
   }, [user, commandId]);
 
   return { status, loading, activate, stop };
