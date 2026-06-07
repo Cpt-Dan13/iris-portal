@@ -52,7 +52,8 @@ export function useAutomation() {
   }, [user]);
 
   const activate = useCallback(async (duration: Duration) => {
-    if (!user) return;
+    console.log('[IRIS] activate() called, duration:', duration, 'user:', user?.id ?? 'NULL');
+    if (!user) { console.warn('[IRIS] No user — aborting'); return; }
     setLoading(true);
     const { data, error } = await supabase
       .from('automation_commands')
@@ -60,6 +61,7 @@ export function useAutomation() {
       .select('id')
       .single();
 
+    console.log('[IRIS] insert result — data:', data, 'error:', error);
     if (!error && data) {
       setCommandId(data.id);
       setStatus('pending');
@@ -68,14 +70,16 @@ export function useAutomation() {
   }, [user]);
 
   const stop = useCallback(async () => {
-    if (!user || !commandId) return;
+    console.log('[IRIS] stop() called, user:', user?.id ?? 'NULL', 'commandId:', commandId);
+    if (!user || !commandId) { console.warn('[IRIS] stop() aborted — missing user or commandId'); return; }
     setLoading(true);
-    await supabase
+    const { data, error } = await supabase
       .from('automation_commands')
       .insert({ user_id: user.id, action: 'stop', status: 'pending' })
       .select('id')
       .single();
 
+    console.log('[IRIS] stop insert result — data:', data, 'error:', error);
     setStatus('stopped');
     setCommandId(null);
     setLoading(false);

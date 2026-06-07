@@ -194,7 +194,10 @@ export default function Activate() {
 
       {/* Button */}
       <button
-        onClick={() => active ? stop() : activate(duration)}
+        onClick={() => {
+          console.log('[IRIS] Button clicked — active:', active, 'status:', status, 'duration:', duration);
+          active ? stop() : activate(duration);
+        }}
         disabled={loading}
         style={{
           display: 'flex',
