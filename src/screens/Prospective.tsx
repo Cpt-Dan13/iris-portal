@@ -27,7 +27,10 @@ export default function Prospective({ profiles, onSelectProfile }: ProspectivePr
 
   return (
     <div style={{ padding: '32px 24px', maxWidth: 1100, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', marginBottom: 28 }}>Prospective</h1>
+      <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Prospective</h1>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 28, maxWidth: 560, lineHeight: 1.6 }}>
+        These are the profiles you matched and have interacted with. Profiles that you matched but haven't had a conversation yet won't appear here.
+      </p>
 
       {LEVELS.map(lvl => {
         const color = levelColor[lvl];

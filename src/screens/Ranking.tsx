@@ -57,7 +57,12 @@ export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
     <div style={{ padding: '32px 24px', maxWidth: 860, margin: '0 auto' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6" style={{ flexWrap: 'wrap', gap: 12 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>Ranking</h1>
+        <div>
+          <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Ranking</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
+            These are the profiles that got the highest allure (attractiveness) score based on user-defined preferences. The automation sent a like on all these profiles, but not all of them are a match.
+          </p>
+        </div>
         <div className="flex gap-2">
           {(['score', 'name'] as SortKey[]).map(k => (
             <button
@@ -109,17 +114,20 @@ export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
               inset: 0,
               background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.85) 100%)',
             }} />
-            {/* Score top-right */}
-            <div style={{
-              position: 'absolute',
-              top: 16,
-              right: 20,
-              fontSize: 48,
-              fontWeight: 700,
-              color: '#fbbf24',
-              textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-            }}>
-              {hero.allureScore}
+            {/* Score + matched badge top-right */}
+            <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+              <span style={{ fontSize: 48, fontWeight: 700, color: '#fbbf24', textShadow: '0 2px 8px rgba(0,0,0,0.5)', lineHeight: 1 }}>
+                {hero.allureScore}
+              </span>
+              {hero.prospectiveScore != null && (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: '#fff',
+                  background: '#22c55e', borderRadius: 9999,
+                  padding: '3px 10px', letterSpacing: '0.5px',
+                }}>
+                  MATCHED
+                </span>
+              )}
             </div>
             {/* Info bottom-left */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 20px 16px' }}>
@@ -191,16 +199,20 @@ export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
                 </div>
               </div>
 
-              {/* Score */}
-              <div style={{
-                fontSize: 22,
-                fontWeight: 700,
-                color: scoreDisplayColor(profile.allureScore),
-                flexShrink: 0,
-                minWidth: 44,
-                textAlign: 'right',
-              }}>
-                {profile.allureScore}
+              {/* Score + matched */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: scoreDisplayColor(profile.allureScore), minWidth: 44, textAlign: 'right' }}>
+                  {profile.allureScore}
+                </span>
+                {profile.prospectiveScore != null && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color: '#fff',
+                    background: '#22c55e', borderRadius: 9999,
+                    padding: '2px 8px', letterSpacing: '0.5px',
+                  }}>
+                    MATCHED
+                  </span>
+                )}
               </div>
             </div>
           );

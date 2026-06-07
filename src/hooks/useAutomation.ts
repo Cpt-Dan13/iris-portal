@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,20 +11,21 @@ export function useAutomation() {
   const [status, setStatus] = useState<AutomationStatus>('idle');
   const [commandId, setCommandId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const stoppedRef = useRef(false);
 
   // Poll for status updates every 5 seconds when pending or running
   useEffect(() => {
     if (!user || status === 'idle' || status === 'stopped') return;
 
     const interval = setInterval(async () => {
-      if (!commandId) return;
+      if (!commandId || stoppedRef.current) return;
       const { data } = await supabase
         .from('automation_commands')
         .select('status')
         .eq('id', commandId)
         .single();
 
-      if (data?.status) setStatus(data.status as AutomationStatus);
+      if (data?.status && !stoppedRef.current) setStatus(data.status as AutomationStatus);
     }, 5000);
 
     return () => clearInterval(interval);
@@ -52,6 +53,7 @@ export function useAutomation() {
   }, [user]);
 
   const activate = useCallback(async (duration: Duration) => {
+    stoppedRef.current = false;
     console.log('[IRIS] activate() called, duration:', duration, 'user:', user?.id ?? 'NULL');
     if (!user) { console.warn('[IRIS] No user — aborting'); return; }
     setLoading(true);
@@ -70,6 +72,7 @@ export function useAutomation() {
   }, [user]);
 
   const stop = useCallback(async () => {
+    stoppedRef.current = true;
     console.log('[IRIS] stop() called, user:', user?.id ?? 'NULL', 'commandId:', commandId);
     if (!user || !commandId) { console.warn('[IRIS] stop() aborted — missing user or commandId'); return; }
     setLoading(true);

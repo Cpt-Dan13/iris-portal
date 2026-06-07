@@ -1,6 +1,7 @@
 import { Rocket, Trophy, BarChart2, FileText, Settings, Sparkles, Sun, Moon, Menu, X, Monitor } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useIrisUser } from '../hooks/useIrisUser';
 
 export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile';
 
@@ -20,6 +21,10 @@ const NAV_ITEMS: { id: Screen; label: string; Icon: React.ElementType }[] = [
 export default function Sidebar({ active, onNavigate }: SidebarProps) {
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { irisUser } = useIrisUser();
+
+  const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
+  const displayName = irisUser?.hinge_name ? `@${irisUser.hinge_name}` : '@user';
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ background: 'var(--card)', borderRight: '1px solid var(--border)' }}>
@@ -74,12 +79,12 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
         >
           <img
-            src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100"
+            src={avatarSrc}
             alt="avatar"
             className="rounded-full"
             style={{ width: 36, height: 36, objectFit: 'cover', border: `2px solid ${active === 'profile' ? '#c084fc' : 'var(--border)'}` }}
           />
-          <span style={{ fontSize: 13, fontWeight: 600, color: active === 'profile' ? '#c084fc' : 'var(--text)' }}>@user</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: active === 'profile' ? '#c084fc' : 'var(--text)' }}>{displayName}</span>
         </button>
         <div className="flex items-center gap-1">
           <button

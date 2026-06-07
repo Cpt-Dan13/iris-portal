@@ -1,4 +1,6 @@
 import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight } from 'lucide-react';
+import { useIrisUser } from '../hooks/useIrisUser';
+import { useAuth } from '../context/AuthContext';
 
 function SectionTitle({ title }: { title: string }) {
   return (
@@ -40,6 +42,13 @@ function SettingRow({ icon: Icon, label, value, last = false }: {
 }
 
 export default function UserProfile() {
+  const { user } = useAuth();
+  const { irisUser } = useIrisUser();
+
+  const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
+  const hingeName = irisUser?.hinge_name ?? '—';
+  const authEmail = user?.email ?? '—';
+
   return (
     <div style={{ padding: '32px 24px', maxWidth: 620, margin: '0 auto' }}>
       <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', marginBottom: 28 }}>Profile</h1>
@@ -51,7 +60,7 @@ export default function UserProfile() {
       }}>
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <img
-            src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100"
+            src={avatarSrc}
             alt="avatar"
             style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #c084fc' }}
           />
@@ -67,10 +76,10 @@ export default function UserProfile() {
         </div>
         <div>
           <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
-            — {/* name will come from auth */}
+            {hingeName}
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            — {/* email will come from auth */}
+            {authEmail}
           </p>
           <span style={{
             display: 'inline-block', marginTop: 8,
@@ -87,9 +96,9 @@ export default function UserProfile() {
       {/* Account */}
       <SectionTitle title="Account" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={User}  label="Full Name"  value="—" />
-        <SettingRow icon={Mail}  label="Email"      value="—" />
-        <SettingRow icon={Phone} label="Phone"      value="—" />
+        <SettingRow icon={User}  label="Full Name"  value={hingeName} />
+        <SettingRow icon={Mail}  label="Email"      value={authEmail} />
+        <SettingRow icon={Phone} label="Phone"      value={irisUser?.phone ?? '—'} />
         <SettingRow icon={Shield} label="Password"  value="••••••••" last />
       </div>
 
@@ -97,7 +106,7 @@ export default function UserProfile() {
       <SectionTitle title="IRIS Instance" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
         <SettingRow icon={Cpu} label="Emulator"      value="user_01" />
-        <SettingRow icon={Cpu} label="Hinge Account" value="Not connected" last />
+        <SettingRow icon={Cpu} label="Hinge Account" value={hingeName !== '—' ? hingeName : 'Not connected'} last />
       </div>
 
       {/* Persona */}
