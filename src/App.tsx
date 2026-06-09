@@ -35,7 +35,7 @@ function Dashboard() {
     switch (screen) {
       case 'activate':    return <Activate />;
       case 'ranking':     return <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
-      case 'prospective': return <Prospective profiles={profiles} onSelectProfile={handleSelectProfile} />;
+      case 'prospective': return <Prospective />;
       case 'reports':     return <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'monitoring':  return <Monitoring />;
       case 'profile':     return <UserProfile />;
