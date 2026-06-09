@@ -12,7 +12,7 @@ export function useProfiles() {
     async function fetch() {
       setLoading(true);
       const { data, error } = await supabase
-        .from('profiles')
+        .from('liked_profiles')
         .select('*')
         .order('allure_score', { ascending: false });
 

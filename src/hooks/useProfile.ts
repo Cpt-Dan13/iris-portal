@@ -14,7 +14,7 @@ export function useProfile(id: string | null) {
     async function fetch() {
       setLoading(true);
       const [profileRes, convRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', id).single(),
+        supabase.from('liked_profiles').select('*').eq('id', id).single(),
         supabase.from('conversations').select('messages').eq('profile_id', id).single(),
       ]);
 

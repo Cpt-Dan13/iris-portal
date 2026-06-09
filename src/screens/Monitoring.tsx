@@ -101,7 +101,7 @@ export default function Monitoring() {
   async function fetchActivity() {
     setRefreshing(true);
     const { data } = await supabase
-      .from('profiles')
+      .from('liked_profiles')
       .select('id, name, allure_score, created_at')
       .order('created_at', { ascending: false })
       .limit(10);
