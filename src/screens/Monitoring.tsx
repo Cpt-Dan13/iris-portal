@@ -3,7 +3,8 @@ import { Monitor, Cpu, Wifi, Activity, Clock, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAutomation } from '../hooks/useAutomation';
 
-const LOG_WS_URL = 'ws://100.74.133.102:8765';
+const LOG_WS_URL = import.meta.env.VITE_LOG_WS_URL ?? 'ws://100.74.133.102:8765';
+const NOVNC_URL = import.meta.env.VITE_NOVNC_URL ?? 'http://100.74.133.102:6080/vnc_lite.html?autoconnect=true&resize=scale';
 
 interface ActivityEntry {
   id: string;
@@ -163,7 +164,7 @@ export default function Monitoring() {
           </div>
           <iframe
             title="IRIS Emulator Live Stream"
-            src="http://100.74.133.102:6080/vnc_lite.html?autoconnect=true&resize=scale"
+            src={NOVNC_URL}
             style={{ flex: 1, width: '100%', minHeight: 800, border: 'none', background: '#0a0a0a', display: 'block' }}
             allow="clipboard-read; clipboard-write"
           />
