@@ -24,7 +24,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
   const { irisUser } = useIrisUser();
 
   const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
-  const displayName = irisUser?.hinge_name ? `@${irisUser.hinge_name}` : '@user';
+  const displayName = irisUser?.hinge_name ? `@${irisUser.hinge_name}` : 'Phantom';
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ background: 'var(--card)', borderRight: '1px solid var(--border)' }}>

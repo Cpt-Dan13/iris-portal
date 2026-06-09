@@ -46,7 +46,6 @@ export default function UserProfile() {
   const { irisUser } = useIrisUser();
 
   const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
-  const hingeName = irisUser?.hinge_name ?? '—';
   const authEmail = user?.email ?? '—';
 
   return (
@@ -76,7 +75,7 @@ export default function UserProfile() {
         </div>
         <div>
           <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
-            {hingeName}
+            Phantom
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             {authEmail}
@@ -96,7 +95,7 @@ export default function UserProfile() {
       {/* Account */}
       <SectionTitle title="Account" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={User}  label="Full Name"  value={hingeName} />
+        <SettingRow icon={User}  label="Full Name"  value="Phantom Menace" />
         <SettingRow icon={Mail}  label="Email"      value={authEmail} />
         <SettingRow icon={Phone} label="Phone"      value={irisUser?.phone ?? '—'} />
         <SettingRow icon={Shield} label="Password"  value="••••••••" last />
@@ -106,7 +105,7 @@ export default function UserProfile() {
       <SectionTitle title="IRIS Instance" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
         <SettingRow icon={Cpu} label="Emulator"      value="user_01" />
-        <SettingRow icon={Cpu} label="Hinge Account" value={hingeName !== '—' ? hingeName : 'Not connected'} last />
+        <SettingRow icon={Cpu} label="Hinge Account" value="Connected" last />
       </div>
 
       {/* Persona */}

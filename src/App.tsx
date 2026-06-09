@@ -31,12 +31,11 @@ function Dashboard() {
       if (detailLoading) return <Loader />;
       if (selectedProfile) return <ProfileDetail profile={selectedProfile} onBack={handleBack} />;
     }
-    if (listLoading) return <Loader />;
     switch (screen) {
       case 'activate':    return <Activate />;
-      case 'ranking':     return <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
+      case 'ranking':     return listLoading ? <Loader /> : <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'prospective': return <Prospective />;
-      case 'reports':     return <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
+      case 'reports':     return listLoading ? <Loader /> : <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'monitoring':  return <Monitoring />;
       case 'profile':     return <UserProfile />;
     }
