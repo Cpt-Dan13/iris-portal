@@ -17,7 +17,7 @@ export function useIrisUser() {
   useEffect(() => {
     async function fetch() {
       const { data } = await supabase
-        .from('iris_users')
+        .from('users')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1)
