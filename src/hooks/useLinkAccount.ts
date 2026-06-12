@@ -59,6 +59,14 @@ export function useLinkAccount() {
     setLoading(true);
     setError(null);
 
+    // Cancel any stale link_account commands so the Android always picks up the new one
+    await supabase
+      .from('automation_commands')
+      .update({ status: 'stopped' })
+      .eq('user_id', user.id)
+      .eq('action', 'link_account')
+      .in('status', ['pending', 'running', 'awaiting_phone_otp', 'awaiting_email_otp']);
+
     const { data, error: err } = await supabase
       .from('automation_commands')
       .insert({
