@@ -11,6 +11,7 @@ import ProfileDetail from './screens/ProfileDetail';
 import Login from './screens/Login';
 import Monitoring from './screens/Monitoring';
 import UserProfile from './screens/UserProfile';
+import LinkAccount from './screens/LinkAccount';
 import { useProfiles } from './hooks/useProfiles';
 import { useProfile } from './hooks/useProfile';
 import type { Profile } from './types';
@@ -33,6 +34,7 @@ function Dashboard() {
     }
     switch (screen) {
       case 'activate':    return <Activate />;
+      case 'setup':       return <LinkAccount />;
       case 'ranking':     return listLoading ? <Loader /> : <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'prospective': return <Prospective />;
       case 'reports':     return listLoading ? <Loader /> : <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
