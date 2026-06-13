@@ -275,10 +275,10 @@ export default function LinkAccount() {
           {/* Progress steps */}
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              { label: 'Launching Hinge app',           done: true },
-              { label: 'Navigating to sign-in screen',  done: step === 'running' },
-              { label: 'Entering phone number',          done: false },
-              { label: 'Waiting for your verification code', done: false },
+              { label: 'Launching Hinge app',            done: true },
+              { label: 'Navigating to sign-in screen',   done: step === 'running' },
+              { label: 'Entering phone number',           done: false },
+              { label: 'Waiting for SMS code',            done: false },
             ].map(({ label, done }, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
@@ -290,6 +290,32 @@ export default function LinkAccount() {
                   {done && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />}
                 </div>
                 <span style={{ fontSize: 13, color: done ? 'var(--text)' : 'var(--text-secondary)', fontWeight: done ? 600 : 400 }}>
+                  {label}
+                </span>
+              </div>
+            ))}
+
+            {/* Email verification — conditional */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap', padding: '0 6px' }}>
+                sometimes required
+              </span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            </div>
+
+            {[
+              { label: 'New device detected by Hinge',   done: false },
+              { label: 'Waiting for email code',          done: false },
+            ].map(({ label, done }, i) => (
+              <div key={`email-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(161,161,161,0.07)',
+                  border: '1.5px dashed var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} />
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
                   {label}
                 </span>
               </div>
