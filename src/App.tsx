@@ -39,7 +39,7 @@ function Dashboard() {
       case 'prospective': return <Prospective />;
       case 'reports':     return listLoading ? <Loader /> : <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'monitoring':  return <Monitoring />;
-      case 'profile':     return <UserProfile />;
+      case 'profile':     return <UserProfile onNavigate={handleNavigate} />;
     }
   };
 

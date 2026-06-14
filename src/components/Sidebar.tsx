@@ -1,4 +1,4 @@
-import { Rocket, Trophy, BarChart2, FileText, Settings, Sparkles, Sun, Moon, Menu, X, Monitor, Link2 } from 'lucide-react';
+import { Rocket, Trophy, BarChart2, FileText, Settings, Sparkles, Sun, Moon, Menu, X, Monitor } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useIrisUser } from '../hooks/useIrisUser';
@@ -12,7 +12,6 @@ interface SidebarProps {
 
 const NAV_ITEMS: { id: Screen; label: string; Icon: React.ElementType }[] = [
   { id: 'activate',    label: 'Activate',    Icon: Rocket   },
-  { id: 'setup',       label: 'Link Account', Icon: Link2    },
   { id: 'ranking',     label: 'Ranking',     Icon: Trophy   },
   { id: 'prospective', label: 'Prospective', Icon: BarChart2 },
   { id: 'reports',     label: 'Reports',     Icon: FileText  },
@@ -144,4 +143,3 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
   );
 }
 
-export type { Screen };

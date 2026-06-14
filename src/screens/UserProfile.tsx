@@ -1,6 +1,7 @@
-import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight } from 'lucide-react';
+import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Link2 } from 'lucide-react';
 import { useIrisUser } from '../hooks/useIrisUser';
 import { useAuth } from '../context/AuthContext';
+import type { Screen } from '../components/Sidebar';
 
 function SectionTitle({ title }: { title: string }) {
   return (
@@ -14,34 +15,36 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function SettingRow({ icon: Icon, label, value, last = false }: {
+function SettingRow({ icon: Icon, label, value, last = false, onClick }: {
   icon: React.ElementType;
   label: string;
   value: string;
   last?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <div
       className="flex items-center gap-3"
+      onClick={onClick}
       style={{
         padding: '13px 16px',
         borderBottom: last ? 'none' : '1px solid var(--border)',
-        cursor: 'pointer',
+        cursor: onClick ? 'pointer' : 'default',
         transition: 'background 0.1s',
         borderRadius: last ? '0 0 12px 12px' : undefined,
       }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(192,132,252,0.04)')}
+      onMouseEnter={e => { if (onClick) e.currentTarget.style.background = 'rgba(192,132,252,0.04)'; }}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
       <Icon size={16} style={{ color: '#c084fc', flexShrink: 0 }} />
       <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{label}</span>
       <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginRight: 8 }}>{value}</span>
-      <ChevronRight size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+      {onClick && <ChevronRight size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />}
     </div>
   );
 }
 
-export default function UserProfile() {
+export default function UserProfile({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const { user } = useAuth();
   const { irisUser } = useIrisUser();
 
@@ -104,8 +107,8 @@ export default function UserProfile() {
       {/* Instance */}
       <SectionTitle title="IRIS Instance" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={Cpu} label="Emulator"      value="user_01" />
-        <SettingRow icon={Cpu} label="Hinge Account" value="Connected" last />
+        <SettingRow icon={Cpu}   label="Emulator"      value="user_01" />
+        <SettingRow icon={Link2} label="Hinge Account" value="Connected" last onClick={() => onNavigate('setup')} />
       </div>
 
       {/* Persona */}
