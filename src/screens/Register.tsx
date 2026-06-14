@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Sparkles, ChevronLeft, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -91,12 +91,33 @@ export default function Register({ onBack }: Props) {
     setLoading(false);
   }
 
+  const backBtn = (
+    <button
+      type="button"
+      onClick={onBack}
+      aria-label="Go back"
+      style={{
+        position: 'absolute', top: 12, left: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 44, height: 44, borderRadius: '50%',
+        background: 'none', border: 'none',
+        cursor: 'pointer', transition: 'color 0.15s',
+        color: 'var(--text-secondary)',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.color = '#c084fc'; }}
+      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
+    >
+      <ChevronLeft size={24} />
+    </button>
+  );
+
   if (created) {
     return (
       <div style={{
-        minHeight: '100vh', background: 'var(--bg)',
+        position: 'relative', minHeight: '100vh', background: 'var(--bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
       }}>
+        {backBtn}
         <div style={{
           background: 'var(--card)', borderRadius: 20, padding: '48px 36px',
           width: '100%', maxWidth: 400, textAlign: 'center',
@@ -127,36 +148,25 @@ export default function Register({ onBack }: Props) {
 
   return (
     <div style={{
-      minHeight: '100vh', background: 'var(--bg)',
+      position: 'relative', minHeight: '100vh', background: 'var(--bg)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
+      {backBtn}
       <div style={{
         background: 'var(--card)', borderRadius: 20, padding: '40px 36px',
         width: '100%', maxWidth: 420,
         boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-          <button
-            onClick={onBack}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-secondary)', padding: 4, borderRadius: 8,
-              display: 'flex', alignItems: 'center',
-            }}
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={22} style={{ color: '#c084fc' }} />
-            <div>
-              <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>
-                Register New User
-              </h1>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                Creates a new IRIS account
-              </p>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          <Sparkles size={22} style={{ color: '#c084fc' }} />
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>
+              Register New User
+            </h1>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+              Creates a new IRIS account
+            </p>
           </div>
         </div>
 
