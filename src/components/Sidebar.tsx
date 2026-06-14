@@ -2,6 +2,7 @@ import { Rocket, Trophy, BarChart2, FileText, Settings, Sparkles, Sun, Moon, Men
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useIrisUser } from '../hooks/useIrisUser';
+import { resolveAvatar } from '../lib/avatars';
 
 export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile' | 'setup' | 'register';
 
@@ -23,8 +24,8 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { irisUser } = useIrisUser();
 
-  const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
   const displayName = irisUser?.name ? `@${irisUser.name}` : 'Phantom';
+  const avatarSrc = resolveAvatar(irisUser?.primary_photo, irisUser?.name ?? 'IRIS');
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ background: 'var(--card)', borderRight: '1px solid var(--border)' }}>
@@ -42,6 +43,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
           const isActive = active === id;
           return (
             <button
+              type="button"
               key={id}
               onClick={() => { onNavigate(id); setMobileOpen(false); }}
               className="w-full flex items-center gap-3 rounded-btn transition-all duration-150"
@@ -68,6 +70,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
       {/* User section */}
       <div className="px-3 pb-4 flex items-center justify-between">
         <button
+          type="button"
           onClick={() => { onNavigate('profile'); setMobileOpen(false); }}
           className="flex items-center gap-2"
           style={{
@@ -88,6 +91,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
         </button>
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={toggle}
             className="rounded-btn transition-colors"
             style={{ padding: 6, color: 'var(--text-secondary)', cursor: 'pointer', background: 'transparent', border: 'none' }}
@@ -125,7 +129,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
           <Sparkles size={18} style={{ color: '#c084fc' }} />
           <span style={{ fontSize: 18, fontWeight: 700, color: '#c084fc' }}>IRIS</span>
         </div>
-        <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>
+        <button type="button" onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
