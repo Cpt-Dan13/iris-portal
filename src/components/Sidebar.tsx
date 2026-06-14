@@ -32,10 +32,17 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ background: 'var(--card)', borderRight: '1px solid var(--border)' }}>
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-5">
-        <Sparkles size={20} className="text-primary" style={{ color: '#c084fc' }} />
+      <button
+        type="button"
+        onClick={() => onNavigate('activate')}
+        className="flex items-center gap-2 px-4 py-5"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s' }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+      >
+        <Sparkles size={20} style={{ color: '#c084fc' }} />
         <span style={{ fontSize: 22, fontWeight: 700, color: '#c084fc', letterSpacing: '0.05em' }}>IRIS</span>
-      </div>
+      </button>
 
       {!isSmallScreen && <div style={{ height: 1, background: 'var(--border)', margin: '0 16px 8px' }} />}
 
@@ -127,10 +134,17 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
       {/* Mobile hamburger */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3"
         style={{ background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onNavigate('activate')}
+          className="flex items-center gap-2"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s' }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >
           <Sparkles size={18} style={{ color: '#c084fc' }} />
           <span style={{ fontSize: 18, fontWeight: 700, color: '#c084fc' }}>IRIS</span>
-        </div>
+        </button>
         <button type="button" onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)' }}>
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
