@@ -12,6 +12,7 @@ import Login from './screens/Login';
 import Monitoring from './screens/Monitoring';
 import UserProfile from './screens/UserProfile';
 import LinkAccount from './screens/LinkAccount';
+import Register from './screens/Register';
 import { useProfiles } from './hooks/useProfiles';
 import { useProfile } from './hooks/useProfile';
 import type { Profile } from './types';
@@ -40,6 +41,7 @@ function Dashboard() {
       case 'reports':     return listLoading ? <Loader /> : <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'monitoring':  return <Monitoring />;
       case 'profile':     return <UserProfile onNavigate={handleNavigate} />;
+      case 'register':    return <Register onBack={() => handleNavigate('profile')} />;
     }
   };
 

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useIrisUser } from '../hooks/useIrisUser';
 
-export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile' | 'setup';
+export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile' | 'setup' | 'register';
 
 interface SidebarProps {
   active: Screen;

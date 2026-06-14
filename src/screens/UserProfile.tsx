@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Check, X, Link2, Pencil } from 'lucide-react';
+import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Check, X, Link2, Pencil, UserPlus } from 'lucide-react';
 import { useIrisUser } from '../hooks/useIrisUser';
 import { useAuth } from '../context/AuthContext';
 import type { Screen } from '../components/Sidebar';
@@ -301,6 +301,12 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
         <StaticRow icon={User} label="Style"  value="—" />
         <StaticRow icon={User} label="Voice"  value="—" />
         <StaticRow icon={User} label="Typing" value="—" last />
+      </div>
+
+      {/* Admin */}
+      <SectionTitle title="Admin" />
+      <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
+        <StaticRow icon={UserPlus} label="Register New User" value="" last onClick={() => onNavigate('register')} />
       </div>
 
       {/* Sign out */}
