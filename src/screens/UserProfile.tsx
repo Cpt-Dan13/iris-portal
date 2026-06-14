@@ -1,4 +1,5 @@
-import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Link2 } from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Check, X, Link2, Pencil } from 'lucide-react';
 import { useIrisUser } from '../hooks/useIrisUser';
 import { useAuth } from '../context/AuthContext';
 import type { Screen } from '../components/Sidebar';
@@ -15,7 +16,194 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function SettingRow({ icon: Icon, label, value, last = false, onClick }: {
+function EditableRow({ icon: Icon, label, value, last = false, onSave, inputType = 'text' }: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  last?: boolean;
+  onSave: (val: string) => Promise<string | null>;
+  inputType?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (draft === value) { setEditing(false); return; }
+    setSaving(true);
+    setErr(null);
+    const error = await onSave(draft);
+    setSaving(false);
+    if (error) { setErr(error); } else { setEditing(false); }
+  };
+
+  const handleCancel = () => { setDraft(value); setEditing(false); setErr(null); };
+
+  return (
+    <div style={{ borderBottom: last ? 'none' : '1px solid var(--border)' }}>
+      {!editing ? (
+        <div
+          className="flex items-center gap-3"
+          onClick={() => { setDraft(value); setEditing(true); }}
+          style={{
+            padding: '13px 16px', cursor: 'pointer', transition: 'background 0.1s',
+            borderRadius: last ? '0 0 12px 12px' : undefined,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(192,132,252,0.04)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <Icon size={16} style={{ color: '#c084fc', flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{label}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginRight: 8 }}>{value || '—'}</span>
+          <Pencil size={13} style={{ color: 'var(--text-secondary)', flexShrink: 0, opacity: 0.5 }} />
+        </div>
+      ) : (
+        <div style={{ padding: '12px 16px', borderRadius: last ? '0 0 12px 12px' : undefined }}>
+          <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
+            <Icon size={16} style={{ color: '#c084fc', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</span>
+          </div>
+          <input
+            type={inputType}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            autoFocus
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') handleCancel(); }}
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              border: `1.5px solid ${err ? '#ef4444' : '#c084fc'}`,
+              background: 'var(--bg)', color: 'var(--text)', fontSize: 14,
+              outline: 'none', boxSizing: 'border-box', marginBottom: 8,
+            }}
+          />
+          {err && <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 8 }}>{err}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, border: 'none',
+                background: '#c084fc', color: '#fff', fontSize: 13, fontWeight: 600,
+                cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1,
+              }}
+            >
+              <Check size={13} /> {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancel}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8,
+                border: '1px solid var(--border)', background: 'transparent',
+                color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              <X size={13} /> Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PasswordRow({ last = false }: { last?: boolean }) {
+  const { updatePassword } = useIrisUser();
+  const [editing, setEditing] = useState(false);
+  const [newPass, setNewPass] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (newPass.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+    if (newPass !== confirm) { setErr('Passwords do not match.'); return; }
+    setSaving(true); setErr(null);
+    const { error } = await updatePassword(newPass);
+    setSaving(false);
+    if (error) { setErr(error); } else { setEditing(false); setNewPass(''); setConfirm(''); }
+  };
+
+  const handleCancel = () => { setEditing(false); setNewPass(''); setConfirm(''); setErr(null); };
+
+  return (
+    <div style={{ borderBottom: last ? 'none' : '1px solid var(--border)' }}>
+      {!editing ? (
+        <div
+          className="flex items-center gap-3"
+          onClick={() => setEditing(true)}
+          style={{
+            padding: '13px 16px', cursor: 'pointer', transition: 'background 0.1s',
+            borderRadius: last ? '0 0 12px 12px' : undefined,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(192,132,252,0.04)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <Shield size={16} style={{ color: '#c084fc', flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Password</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', marginRight: 8 }}>••••••••</span>
+          <Pencil size={13} style={{ color: 'var(--text-secondary)', flexShrink: 0, opacity: 0.5 }} />
+        </div>
+      ) : (
+        <div style={{ padding: '12px 16px', borderRadius: last ? '0 0 12px 12px' : undefined }}>
+          <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
+            <Shield size={16} style={{ color: '#c084fc', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>New Password</span>
+          </div>
+          {(['New password', 'Confirm password'] as const).map((placeholder, i) => (
+            <input
+              key={i}
+              type="password"
+              placeholder={placeholder}
+              value={i === 0 ? newPass : confirm}
+              onChange={e => i === 0 ? setNewPass(e.target.value) : setConfirm(e.target.value)}
+              autoFocus={i === 0}
+              onKeyDown={e => { if (e.key === 'Escape') handleCancel(); }}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 8,
+                border: `1.5px solid ${err ? '#ef4444' : 'var(--border)'}`,
+                background: 'var(--bg)', color: 'var(--text)', fontSize: 14,
+                outline: 'none', boxSizing: 'border-box', marginBottom: 8,
+              }}
+              onFocus={e => (e.target.style.borderColor = err ? '#ef4444' : '#c084fc')}
+              onBlur={e => (e.target.style.borderColor = err ? '#ef4444' : 'var(--border)')}
+            />
+          ))}
+          {err && <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 8 }}>{err}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, border: 'none',
+                background: '#c084fc', color: '#fff', fontSize: 13, fontWeight: 600,
+                cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1,
+              }}
+            >
+              <Check size={13} /> {saving ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancel}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8,
+                border: '1px solid var(--border)', background: 'transparent',
+                color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              <X size={13} /> Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StaticRow({ icon: Icon, label, value, last = false, onClick }: {
   icon: React.ElementType;
   label: string;
   value: string;
@@ -46,7 +234,7 @@ function SettingRow({ icon: Icon, label, value, last = false, onClick }: {
 
 export default function UserProfile({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const { user } = useAuth();
-  const { irisUser } = useIrisUser();
+  const { irisUser, updateUser } = useIrisUser();
 
   const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
   const authEmail = user?.email ?? '—';
@@ -78,45 +266,41 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
         </div>
         <div>
           <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
-            Phantom
+            {irisUser?.name ?? 'Phantom'}
           </p>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            {authEmail}
-          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{authEmail}</p>
           <span style={{
             display: 'inline-block', marginTop: 8,
             fontSize: 11, fontWeight: 700,
             color: '#22c55e', background: 'rgba(34,197,94,0.10)',
             border: '1px solid rgba(34,197,94,0.25)',
             borderRadius: 6, padding: '2px 8px',
-          }}>
-            Active
-          </span>
+          }}>Active</span>
         </div>
       </div>
 
       {/* Account */}
       <SectionTitle title="Account" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={User}  label="Full Name"  value="Phantom Menace" />
-        <SettingRow icon={Mail}  label="Email"      value={authEmail} />
-        <SettingRow icon={Phone} label="Phone"      value={irisUser?.phone ?? '—'} />
-        <SettingRow icon={Shield} label="Password"  value="••••••••" last />
+        <EditableRow icon={User}  label="Name"  value={irisUser?.name ?? ''} onSave={v => updateUser({ name: v }).then(r => r.error)} />
+        <EditableRow icon={Mail}  label="Email" value={irisUser?.email ?? ''} onSave={v => updateUser({ email: v }).then(r => r.error)} inputType="email" />
+        <EditableRow icon={Phone} label="Phone" value={irisUser?.phone ?? ''} onSave={v => updateUser({ phone: v }).then(r => r.error)} inputType="tel" />
+        <PasswordRow last />
       </div>
 
       {/* Instance */}
       <SectionTitle title="IRIS Instance" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={Cpu}   label="Emulator"      value="user_01" />
-        <SettingRow icon={Link2} label="Hinge Account" value="Connected" last onClick={() => onNavigate('setup')} />
+        <StaticRow icon={Cpu}   label="Emulator"      value="user_01" />
+        <StaticRow icon={Link2} label="Hinge Account" value="Connected" last onClick={() => onNavigate('setup')} />
       </div>
 
       {/* Persona */}
       <SectionTitle title="Persona" />
       <div style={{ background: 'var(--card)', borderRadius: 12, overflow: 'hidden' }}>
-        <SettingRow icon={User} label="Style"  value="—" />
-        <SettingRow icon={User} label="Voice"  value="—" />
-        <SettingRow icon={User} label="Typing" value="—" last />
+        <StaticRow icon={User} label="Style"  value="—" />
+        <StaticRow icon={User} label="Voice"  value="—" />
+        <StaticRow icon={User} label="Typing" value="—" last />
       </div>
 
       {/* Sign out */}

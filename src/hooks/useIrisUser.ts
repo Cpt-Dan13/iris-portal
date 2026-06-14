@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export interface IrisUser {
   id: string;
-  hinge_name: string | null;
+  user_id: string | null;
+  name: string | null;
   email: string | null;
   phone: string | null;
   primary_photo: string | null;
@@ -11,23 +13,39 @@ export interface IrisUser {
 }
 
 export function useIrisUser() {
+  const { user } = useAuth();
   const [irisUser, setIrisUser] = useState<IrisUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) { setLoading(false); return; }
     async function fetch() {
       const { data } = await supabase
         .from('users')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('user_id', user.id)
         .single();
 
       if (data) setIrisUser(data as IrisUser);
       setLoading(false);
     }
     fetch();
+  }, [user?.id]);
+
+  const updateUser = useCallback(async (fields: Partial<Pick<IrisUser, 'name' | 'email' | 'phone'>>) => {
+    if (!irisUser) return { error: 'No user loaded' };
+    const { error } = await supabase
+      .from('users')
+      .update(fields)
+      .eq('id', irisUser.id);
+    if (!error) setIrisUser(prev => prev ? { ...prev, ...fields } : prev);
+    return { error: error?.message ?? null };
+  }, [irisUser]);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message ?? null };
   }, []);
 
-  return { irisUser, loading };
+  return { irisUser, loading, updateUser, updatePassword };
 }
