@@ -1,93 +1,95 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export type AutomationStatus = 'idle' | 'pending' | 'running' | 'stopping' | 'stopped';
 
 export type Duration = '15mins' | '3hours' | '8hours' | '1day' | '3days' | '1week';
 
+const API_URL = (import.meta.env.VITE_API_URL as string) ?? 'http://localhost:8000';
+const INSTANCE_ID = 'user_01';
+
+async function fetchInstanceStatus(): Promise<'running' | 'idle' | 'error' | null> {
+  try {
+    const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/status`);
+    if (r.status === 404) return null;
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.status ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function useAutomation() {
   const { user } = useAuth();
   const [status, setStatus] = useState<AutomationStatus>('idle');
-  const [commandId, setCommandId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const stoppedRef = useRef(false);
 
-  // Poll for status updates every 5 seconds when pending or running
+  // On mount — sync status from last known heartbeat
+  useEffect(() => {
+    if (!user) return;
+    fetchInstanceStatus().then(s => {
+      if (s === 'running') setStatus('running');
+    });
+  }, [user]);
+
+  // Poll status while active or stopping
   useEffect(() => {
     if (!user || status === 'idle' || status === 'stopped') return;
 
     const interval = setInterval(async () => {
-      if (!commandId || stoppedRef.current) return;
-      const { data } = await supabase
-        .from('automation_commands')
-        .select('status')
-        .eq('id', commandId)
-        .single();
-
-      if (data?.status && !stoppedRef.current) setStatus(data.status as AutomationStatus);
+      const s = await fetchInstanceStatus();
+      if (s === 'running') {
+        setStatus('running');
+      } else if (s === 'idle') {
+        setStatus('idle');
+      }
+      // null / 404 → no heartbeat yet — keep current state (pending/stopping)
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [user, status, commandId]);
-
-  // On mount — check if there's already a running command for this user
-  useEffect(() => {
-    if (!user) return;
-    async function checkExisting() {
-      const { data } = await supabase
-        .from('automation_commands')
-        .select('id, status')
-        .eq('user_id', user!.id)
-        .in('status', ['pending', 'running'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data) {
-        setCommandId(data.id);
-        setStatus(data.status as AutomationStatus);
-      }
-    }
-    checkExisting();
-  }, [user]);
+  }, [user, status]);
 
   const activate = useCallback(async (duration: Duration) => {
-    stoppedRef.current = false;
-    console.log('[IRIS] activate() called, duration:', duration, 'user:', user?.id ?? 'NULL');
-    if (!user) { console.warn('[IRIS] No user — aborting'); return; }
+    if (!user) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('automation_commands')
-      .insert({ user_id: user.id, action: 'start', duration, status: 'pending' })
-      .select('id')
-      .single();
-
-    console.log('[IRIS] insert result — data:', data, 'error:', error);
-    if (!error && data) {
-      setCommandId(data.id);
-      setStatus('pending');
+    try {
+      const r = await fetch(
+        `${API_URL}/instances/${INSTANCE_ID}/start?user_id=${encodeURIComponent(user.id)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration }),
+        }
+      );
+      if (r.ok) {
+        setStatus('pending');
+      } else {
+        console.error('[IRIS] activate failed', r.status, await r.text());
+      }
+    } catch (e) {
+      console.error('[IRIS] activate error', e);
     }
     setLoading(false);
   }, [user]);
 
   const stop = useCallback(async () => {
-    stoppedRef.current = true;
-    console.log('[IRIS] stop() called, user:', user?.id ?? 'NULL', 'commandId:', commandId);
-    if (!user || !commandId) { console.warn('[IRIS] stop() aborted — missing user or commandId'); return; }
+    if (!user) return;
     setStatus('stopping');
     setLoading(true);
-    const { data, error } = await supabase
-      .from('automation_commands')
-      .insert({ user_id: user.id, action: 'stop', status: 'pending' })
-      .select('id')
-      .single();
-
-    console.log('[IRIS] stop insert result — data:', data, 'error:', error);
-    setCommandId(null);
+    try {
+      const r = await fetch(
+        `${API_URL}/instances/${INSTANCE_ID}/stop?user_id=${encodeURIComponent(user.id)}`,
+        { method: 'POST' }
+      );
+      if (!r.ok) {
+        console.error('[IRIS] stop failed', r.status, await r.text());
+      }
+    } catch (e) {
+      console.error('[IRIS] stop error', e);
+    }
     setLoading(false);
-    setTimeout(() => setStatus('idle'), 2000);
-  }, [user, commandId]);
+  }, [user]);
 
   return { status, loading, activate, stop };
 }
