@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageSquare, Ruler, Heart, Star, Briefcase, Home, Baby, Users } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Ruler, Heart, Star, Briefcase, Home, Baby, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobile } from '../hooks/useMobile';
 import type { MatchedProfile } from '../hooks/useMatchedProfiles';
@@ -103,7 +103,7 @@ export default function MatchedProfileDetail({ profile, onBack }: Props) {
         onMouseEnter={e => (e.currentTarget.style.color = '#c084fc')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
       >
-        <ArrowLeft size={18} />
+        <ChevronLeft size={18} />
         Back
       </button>
 

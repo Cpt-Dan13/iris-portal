@@ -1,4 +1,4 @@
-import { ArrowLeft, Ruler, Star, GraduationCap, Briefcase, Wine, Cigarette, Dumbbell, Dog, Heart, Baby, Home, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Ruler, Star, GraduationCap, Briefcase, Wine, Cigarette, Dumbbell, Dog, Heart, Baby, Home, MessageSquare } from 'lucide-react';
 import type { Profile } from '../types';
 import { levelColor } from '../types';
 import { useMobile } from '../hooks/useMobile';
@@ -74,7 +74,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
         onMouseEnter={e => (e.currentTarget.style.color = '#c084fc')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
       >
-        <ArrowLeft size={18} />
+        <ChevronLeft size={18} />
         Back
       </button>
 
