@@ -109,8 +109,10 @@ function EditableRow({ icon: Icon, label, value, last = false, onSave, inputType
   );
 }
 
-function PasswordRow({ last = false }: { last?: boolean }) {
-  const { updatePassword } = useIrisUser();
+function PasswordRow({ last = false, updatePassword }: {
+  last?: boolean;
+  updatePassword: (p: string) => Promise<{ error: string | null }>;
+}) {
   const [editing, setEditing] = useState(false);
   const [newPass, setNewPass] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -233,10 +235,12 @@ function StaticRow({ icon: Icon, label, value, last = false, onClick }: {
 }
 
 export default function UserProfile({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
-  const { user } = useAuth();
-  const { irisUser, updateUser } = useIrisUser();
+  const { user, signOut } = useAuth();
+  const { irisUser, updateUser, updatePassword } = useIrisUser();
 
-  const avatarSrc = irisUser?.primary_photo ?? 'https://ui-avatars.com/api/?name=IRIS&background=c084fc&color=fff&size=100';
+  const displayName = irisUser?.name ?? 'IRIS';
+  const avatarSrc = irisUser?.primary_photo
+    ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=c084fc&color=fff&size=100`;
   const authEmail = user?.email ?? '—';
 
   return (
@@ -266,7 +270,7 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
         </div>
         <div>
           <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>
-            {irisUser?.name ?? 'Phantom'}
+            {displayName}
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{authEmail}</p>
           <span style={{
@@ -285,7 +289,7 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
         <EditableRow icon={User}  label="Name"  value={irisUser?.name ?? ''} onSave={v => updateUser({ name: v }).then(r => r.error)} />
         <EditableRow icon={Mail}  label="Email" value={irisUser?.email ?? ''} onSave={v => updateUser({ email: v }).then(r => r.error)} inputType="email" />
         <EditableRow icon={Phone} label="Phone" value={irisUser?.phone ?? ''} onSave={v => updateUser({ phone: v }).then(r => r.error)} inputType="tel" />
-        <PasswordRow last />
+        <PasswordRow last updatePassword={updatePassword} />
       </div>
 
       {/* Instance */}
@@ -322,6 +326,7 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
           }}
           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.12)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
+          onClick={() => signOut()}
         >
           <LogOut size={16} />
           Sign Out
