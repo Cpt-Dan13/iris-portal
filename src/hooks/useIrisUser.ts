@@ -32,7 +32,7 @@ export function useIrisUser() {
     fetch();
   }, [user?.id]);
 
-  const updateUser = useCallback(async (fields: Partial<Pick<IrisUser, 'name' | 'email' | 'phone'>>) => {
+  const updateUser = useCallback(async (fields: Partial<Pick<IrisUser, 'name' | 'email' | 'phone' | 'primary_photo'>>) => {
     if (!irisUser) return { error: 'No user loaded' };
     const { error } = await supabase
       .from('users')

@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Check, X, Link2, Pencil, UserPlus } from 'lucide-react';
+import { User, Mail, Phone, Shield, Cpu, LogOut, Edit3, ChevronRight, Check, X, Link2, Pencil, UserPlus, CheckCircle } from 'lucide-react';
+
+const AVATARS: { key: string; url: string; label: string }[] = [
+  { key: 'avatar-001', label: 'Phantom', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=phantom' },
+  { key: 'avatar-002', label: 'Spectre', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=spectre' },
+  { key: 'avatar-003', label: 'Nexus',   url: 'https://api.dicebear.com/9.x/bottts/svg?seed=nexus'   },
+];
+
+function resolveAvatar(photo: string | null | undefined, fallbackName: string): string {
+  if (!photo) return `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=c084fc&color=fff&size=100`;
+  const match = AVATARS.find(a => a.key === photo);
+  return match ? match.url : photo;
+}
 import { useIrisUser } from '../hooks/useIrisUser';
 import { useAuth } from '../context/AuthContext';
 import type { Screen } from '../components/Sidebar';
@@ -180,6 +192,101 @@ function EditModal({ state, onClose, updatePassword }: {
   );
 }
 
+// ─── Avatar Picker Modal ──────────────────────────────────────────────────────
+
+function AvatarPickerModal({ current, onSelect, onClose }: {
+  current: string | null;
+  onSelect: (key: string) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const handleSelect = async (key: string) => {
+    if (key === current) { onClose(); return; }
+    setSaving(key);
+    await onSelect(key);
+    setSaving(null);
+    onClose();
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, backdropFilter: 'blur(4px)',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--card)', borderRadius: 20,
+          padding: '28px 28px 24px', width: '100%', maxWidth: 380,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+          border: '1px solid var(--border)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Choose Avatar</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', padding: 4 }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+          {AVATARS.map(({ key, url, label }) => {
+            const isSelected = current === key;
+            const isSaving  = saving === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleSelect(key)}
+                disabled={saving !== null}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+                  background: 'none', border: 'none', cursor: saving ? 'wait' : 'pointer',
+                  padding: 0, opacity: saving && !isSaving ? 0.5 : 1,
+                }}
+              >
+                <div style={{
+                  position: 'relative',
+                  width: 80, height: 80, borderRadius: '50%',
+                  border: `3px solid ${isSelected ? '#c084fc' : 'var(--border)'}`,
+                  padding: 3, transition: 'border-color 0.15s',
+                  boxShadow: isSelected ? '0 0 0 2px rgba(192,132,252,0.3)' : 'none',
+                }}>
+                  <img
+                    src={url}
+                    alt={label}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', display: 'block', background: 'var(--bg)' }}
+                  />
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute', bottom: -2, right: -2,
+                      background: '#c084fc', borderRadius: '50%',
+                      width: 22, height: 22,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: '2px solid var(--card)',
+                    }}>
+                      <CheckCircle size={12} style={{ color: '#fff' }} />
+                    </div>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: isSelected ? '#c084fc' : 'var(--text-secondary)' }}>
+                  {isSaving ? '…' : label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Row components ───────────────────────────────────────────────────────────
 
 function SectionTitle({ title }: { title: string }) {
@@ -257,10 +364,10 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
   const { user, signOut } = useAuth();
   const { irisUser, updateUser, updatePassword } = useIrisUser();
   const [modal, setModal] = useState<ModalState>(null);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
 
   const displayName = irisUser?.name ?? 'IRIS';
-  const avatarSrc = irisUser?.primary_photo
-    ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=c084fc&color=fff&size=100`;
+  const avatarSrc = resolveAvatar(irisUser?.primary_photo, displayName);
 
   const openField = (label: string, inputType: string, currentValue: string, field: 'name' | 'email' | 'phone') =>
     setModal({
@@ -274,6 +381,13 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
   return (
     <>
       <EditModal state={modal} onClose={() => setModal(null)} updatePassword={updatePassword} />
+      {avatarPickerOpen && (
+        <AvatarPickerModal
+          current={irisUser?.primary_photo ?? null}
+          onSelect={async (key) => { await updateUser({ primary_photo: key }); }}
+          onClose={() => setAvatarPickerOpen(false)}
+        />
+      )}
 
       <div style={{ padding: '32px 24px', maxWidth: 620, margin: '0 auto' }}>
         <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)', marginBottom: 28 }}>Profile</h1>
@@ -289,13 +403,18 @@ export default function UserProfile({ onNavigate }: { onNavigate: (screen: Scree
               alt="avatar"
               style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #c084fc' }}
             />
-            <button style={{
-              position: 'absolute', bottom: 0, right: 0,
-              width: 26, height: 26, borderRadius: '50%',
-              background: '#c084fc', border: '2px solid var(--card)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
+            <button
+              type="button"
+              aria-label="Change avatar"
+              onClick={() => setAvatarPickerOpen(true)}
+              style={{
+                position: 'absolute', bottom: 0, right: 0,
+                width: 26, height: 26, borderRadius: '50%',
+                background: '#c084fc', border: '2px solid var(--card)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
               <Edit3 size={12} style={{ color: '#fff' }} />
             </button>
           </div>
