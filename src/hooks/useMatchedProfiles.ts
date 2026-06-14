@@ -15,6 +15,17 @@ export interface MatchedProfile {
   personalityTags: string[];
   matchedAt: string;
   conversationStatus: 'active' | 'ghosted' | 'archived';
+  // extended details
+  gender: string | null;
+  sexuality: string | null;
+  height: string | null;
+  hometown: string | null;
+  ethnicity: string | null;
+  religion: string | null;
+  datingIntentions: string | null;
+  relationshipType: string | null;
+  children: string | null;
+  familyPlans: string | null;
 }
 
 export function useMatchedProfiles() {
@@ -47,6 +58,16 @@ export function useMatchedProfiles() {
           personalityTags: row.personality_tags ?? [],
           matchedAt: row.matched_at,
           conversationStatus: row.conversation_status,
+          gender: row.gender,
+          sexuality: row.sexuality,
+          height: row.height,
+          hometown: row.hometown,
+          ethnicity: row.ethnicity,
+          religion: row.religion,
+          datingIntentions: row.dating_intentions,
+          relationshipType: row.relationship_type,
+          children: row.children,
+          familyPlans: row.family_plans,
         })));
       }
       setLoading(false);

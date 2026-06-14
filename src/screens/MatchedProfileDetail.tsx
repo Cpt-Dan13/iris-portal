@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageSquare } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Ruler, Heart, Star, Briefcase, Home, Baby, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { MatchedProfile } from '../hooks/useMatchedProfiles';
 import { levelColor } from '../types';
@@ -20,6 +20,25 @@ const STATUS_LABEL: Record<string, string> = {
   ghosted: 'Ghosted',
   archived: 'Archived',
 };
+
+function DetailRow({ icon: Icon, label, value, last }: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '11px 0',
+      borderBottom: last ? 'none' : '1px solid var(--border)',
+    }}>
+      <Icon size={17} style={{ color: '#c084fc', flexShrink: 0 }} />
+      <span style={{ flex: 1, fontSize: 14, color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', textAlign: 'right' }}>{value}</span>
+    </div>
+  );
+}
 
 interface Props {
   profile: MatchedProfile;
@@ -46,10 +65,32 @@ export default function MatchedProfileDetail({ profile, onBack }: Props) {
   const levelCol = profile.prospectiveLevel ? levelColor[profile.prospectiveLevel] : '#c084fc';
   const statusColor = STATUS_COLOR[profile.conversationStatus];
 
+  // Build detail rows — only show fields that have a value
+  const vitals: { icon: React.ElementType; label: string; value: string }[] = [
+    profile.height       && { icon: Ruler,  label: 'Height',    value: profile.height },
+    profile.gender       && { icon: Star,   label: 'Gender',    value: profile.gender },
+    profile.sexuality    && { icon: Heart,  label: 'Sexuality', value: profile.sexuality },
+    profile.ethnicity    && { icon: Star,   label: 'Ethnicity', value: profile.ethnicity },
+  ].filter(Boolean) as { icon: React.ElementType; label: string; value: string }[];
+
+  const life: { icon: React.ElementType; label: string; value: string }[] = [
+    profile.hometown     && { icon: Home,     label: 'Hometown', value: profile.hometown },
+    profile.job          && { icon: Briefcase, label: 'Job',      value: profile.job },
+    profile.religion     && { icon: Star,      label: 'Religion', value: profile.religion },
+  ].filter(Boolean) as { icon: React.ElementType; label: string; value: string }[];
+
+  const goals: { icon: React.ElementType; label: string; value: string }[] = [
+    profile.datingIntentions && { icon: Heart, label: 'Dating',        value: profile.datingIntentions },
+    profile.relationshipType && { icon: Users, label: 'Relationship',  value: profile.relationshipType },
+    profile.children         && { icon: Baby,  label: 'Children',      value: profile.children },
+    profile.familyPlans      && { icon: Baby,  label: 'Family plans',  value: profile.familyPlans },
+  ].filter(Boolean) as { icon: React.ElementType; label: string; value: string }[];
+
   return (
     <div style={{ padding: '24px', maxWidth: 1100, margin: '0 auto' }}>
       {/* Back */}
       <button
+        type="button"
         onClick={onBack}
         className="flex items-center gap-2"
         style={{
@@ -150,11 +191,35 @@ export default function MatchedProfileDetail({ profile, onBack }: Props) {
             </div>
           </div>
 
-          {/* Bio */}
+          {/* About */}
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>About</p>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{profile.bio ?? '—'}</p>
         </div>
       </div>
+
+      {/* Detail sections */}
+      {(vitals.length > 0 || life.length > 0 || goals.length > 0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
+          {vitals.length > 0 && (
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Vitals</p>
+              {vitals.map((v, i) => <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === vitals.length - 1} />)}
+            </div>
+          )}
+          {life.length > 0 && (
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Life</p>
+              {life.map((v, i) => <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === life.length - 1} />)}
+            </div>
+          )}
+          {goals.length > 0 && (
+            <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Relationship Goals</p>
+              {goals.map((v, i) => <DetailRow key={v.label} icon={v.icon} label={v.label} value={v.value} last={i === goals.length - 1} />)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Conversation history */}
       <div style={{ background: 'var(--card)', borderRadius: 16, padding: 24 }}>
