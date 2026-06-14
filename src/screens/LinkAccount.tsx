@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Phone, Mail, CheckCircle, XCircle, Link2, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Phone, Mail, CheckCircle, XCircle, Link2, RefreshCw, ArrowRight, ChevronLeft } from 'lucide-react';
 import { useLinkAccount, type LinkStep } from '../hooks/useLinkAccount';
 
 // ─── OTP Input ────────────────────────────────────────────────────────────────
@@ -140,17 +140,19 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
     <button
       type="button"
       onClick={onBack}
+      aria-label="Go back"
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        background: 'none', border: 'none', cursor: 'pointer',
-        color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600,
-        padding: '6px 10px', borderRadius: 8, marginBottom: 16,
-        transition: 'color 0.15s',
+        position: 'absolute', top: 12, left: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 44, height: 44, borderRadius: '50%',
+        background: 'none', border: 'none',
+        cursor: 'pointer', transition: 'color 0.15s',
+        color: 'var(--text-secondary)',
       }}
-      onMouseEnter={e => (e.currentTarget.style.color = '#c084fc')}
-      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+      onMouseEnter={e => { e.currentTarget.style.color = '#c084fc'; }}
+      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
     >
-      <ArrowLeft size={15} /> Back
+      <ChevronLeft size={24} />
     </button>
   );
 
@@ -186,7 +188,7 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
   // ── Idle: phone entry form ───────────────────────────────────────────────
   if (step === 'idle') {
     return (
-      <div style={{ padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {backBtn}
         <div style={cardStyle}>
           {iconCircle('#c084fc', 'rgba(192,132,252,0.12)', Link2)}
@@ -272,7 +274,7 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
   // ── Navigating: pending / running ────────────────────────────────────────
   if (step === 'pending' || step === 'running') {
     return (
-      <div style={{ padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {backBtn}
         <div style={cardStyle}>
           <div style={{
@@ -358,7 +360,7 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
     const iconBg = isPhone ? 'rgba(192,132,252,0.12)' : 'rgba(96,165,250,0.12)';
 
     return (
-      <div style={{ padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {backBtn}
         <div style={cardStyle}>
           {iconCircle(iconColor, iconBg, Icon)}
@@ -401,7 +403,7 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
   // ── Success ───────────────────────────────────────────────────────────────
   if (step === 'completed') {
     return (
-      <div style={{ padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {backBtn}
         <div style={cardStyle}>
           {iconCircle('#22c55e', 'rgba(34,197,94,0.12)', CheckCircle)}
