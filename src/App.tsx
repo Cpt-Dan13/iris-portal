@@ -35,7 +35,7 @@ function Dashboard() {
     }
     switch (screen) {
       case 'activate':    return <Activate />;
-      case 'setup':       return <LinkAccount />;
+      case 'setup':       return <LinkAccount onBack={() => handleNavigate('profile')} />;
       case 'ranking':     return listLoading ? <Loader /> : <Ranking profiles={profiles} onSelectProfile={handleSelectProfile} />;
       case 'prospective': return <Prospective />;
       case 'reports':     return listLoading ? <Loader /> : <Reports profiles={profiles} onSelectProfile={handleSelectProfile} />;
