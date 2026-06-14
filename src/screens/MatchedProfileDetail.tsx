@@ -1,5 +1,6 @@
 import { ArrowLeft, MessageSquare, Ruler, Heart, Star, Briefcase, Home, Baby, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useMobile } from '../hooks/useMobile';
 import type { MatchedProfile } from '../hooks/useMatchedProfiles';
 import { levelColor } from '../types';
 import { supabase } from '../lib/supabase';
@@ -48,6 +49,7 @@ interface Props {
 export default function MatchedProfileDetail({ profile, onBack }: Props) {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [loadingConv, setLoadingConv] = useState(true);
+  const isMobile = useMobile();
 
   useEffect(() => {
     async function fetchConversation() {
@@ -108,21 +110,33 @@ export default function MatchedProfileDetail({ profile, onBack }: Props) {
       {/* Hero card */}
       <div style={{
         background: 'var(--card)', borderRadius: 16,
-        overflow: 'hidden', display: 'flex', marginBottom: 20, minHeight: 400,
+        overflow: 'hidden', display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        marginBottom: 20, minHeight: isMobile ? 0 : 400,
       }}>
         {profile.photo ? (
           <img
             src={profile.photo}
             alt={profile.name}
-            style={{ width: '40%', minWidth: 220, objectFit: 'cover', display: 'block', flexShrink: 0 }}
+            style={{
+              width: isMobile ? '100%' : '40%',
+              minWidth: isMobile ? 0 : 220,
+              height: isMobile ? 280 : 'auto',
+              objectFit: 'cover', display: 'block', flexShrink: 0,
+            }}
           />
         ) : (
-          <div style={{ width: '40%', minWidth: 220, background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{
+            width: isMobile ? '100%' : '40%',
+            minWidth: isMobile ? 0 : 220,
+            height: isMobile ? 280 : 'auto',
+            background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
             <span style={{ fontSize: 60, color: '#444' }}>?</span>
           </div>
         )}
 
-        <div style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: isMobile ? 16 : 24, overflowY: 'auto' }}>
           {/* Name + prospective level */}
           <div className="flex items-start justify-between" style={{ marginBottom: 4, gap: 12 }}>
             <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>{profile.name}</span>

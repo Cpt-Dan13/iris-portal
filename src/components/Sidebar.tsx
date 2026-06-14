@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useIrisUser } from '../hooks/useIrisUser';
 import { resolveAvatar } from '../lib/avatars';
+import { useMobile } from '../hooks/useMobile';
 
 export type Screen = 'activate' | 'ranking' | 'prospective' | 'reports' | 'monitoring' | 'profile' | 'setup' | 'register';
 
@@ -23,6 +24,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { irisUser } = useIrisUser();
+  const isSmallScreen = useMobile(768);
 
   const displayName = irisUser?.name ? `@${irisUser.name}` : 'Phantom';
   const avatarSrc = resolveAvatar(irisUser?.primary_photo, irisUser?.name ?? 'IRIS');
@@ -35,7 +37,7 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
         <span style={{ fontSize: 22, fontWeight: 700, color: '#c084fc', letterSpacing: '0.05em' }}>IRIS</span>
       </div>
 
-      <div style={{ height: 1, background: 'var(--border)', margin: '0 16px 8px' }} />
+      {!isSmallScreen && <div style={{ height: 1, background: 'var(--border)', margin: '0 16px 8px' }} />}
 
       {/* Nav */}
       <nav className="flex-1 px-2 pt-2 space-y-1">
@@ -135,14 +137,28 @@ export default function Sidebar({ active, onNavigate }: SidebarProps) {
       </div>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40" onClick={() => setMobileOpen(false)}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
-          <aside className="absolute left-0 top-0 bottom-0" style={{ width: 220, zIndex: 50 }} onClick={e => e.stopPropagation()}>
-            {sidebarContent}
-          </aside>
-        </div>
-      )}
+      <div
+        className="md:hidden fixed inset-0 z-40"
+        style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
+        onClick={() => setMobileOpen(false)}
+      >
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          opacity: mobileOpen ? 1 : 0,
+          transition: 'opacity 0.25s ease-out',
+        }} />
+        <aside
+          style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0, width: 220, zIndex: 50,
+            transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.25s ease-out',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {sidebarContent}
+        </aside>
+      </div>
     </>
   );
 }

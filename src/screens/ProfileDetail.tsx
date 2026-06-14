@@ -1,6 +1,7 @@
 import { ArrowLeft, Ruler, Star, GraduationCap, Briefcase, Wine, Cigarette, Dumbbell, Dog, Heart, Baby, Home, MessageSquare } from 'lucide-react';
 import type { Profile } from '../types';
 import { levelColor } from '../types';
+import { useMobile } from '../hooks/useMobile';
 import PersonalityTag from '../components/PersonalityTag';
 import ScoreBadge from '../components/ScoreBadge';
 
@@ -51,6 +52,7 @@ function SectionTitle({ title }: { title: string }) {
 
 export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
   const color = levelColor[profile.prospectiveLevel];
+  const isMobile = useMobile();
 
   return (
     <div style={{ padding: '24px', maxWidth: 1100, margin: '0 auto' }}>
@@ -82,16 +84,18 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
         borderRadius: 16,
         overflow: 'hidden',
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         marginBottom: 20,
-        minHeight: 400,
+        minHeight: isMobile ? 0 : 400,
       }}>
-        {/* Photo — flush left, fills card height */}
+        {/* Photo */}
         <img
           src={profile.photo}
           alt={profile.name}
           style={{
-            width: '40%',
-            minWidth: 220,
+            width: isMobile ? '100%' : '40%',
+            minWidth: isMobile ? 0 : 220,
+            height: isMobile ? 280 : 'auto',
             objectFit: 'cover',
             display: 'block',
             flexShrink: 0,
@@ -99,7 +103,7 @@ export default function ProfileDetail({ profile, onBack }: ProfileDetailProps) {
         />
 
         {/* Identity + scores + tags + about */}
-        <div style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: isMobile ? 16 : 24, overflowY: 'auto' }}>
           {/* Name + level pill */}
           <div className="flex items-start justify-between" style={{ marginBottom: 4, gap: 12 }}>
             <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>{profile.name}</span>
