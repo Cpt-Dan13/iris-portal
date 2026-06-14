@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export type LinkStep =
@@ -11,81 +10,56 @@ export type LinkStep =
   | 'completed'
   | 'stopped';
 
+const API_URL = (import.meta.env.VITE_API_URL as string) ?? 'http://localhost:8000';
+const INSTANCE_ID = 'user_01';
+
 export function useLinkAccount() {
   const { user } = useAuth();
   const [step, setStep] = useState<LinkStep>('idle');
-  const [commandId, setCommandId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
-
+  // Poll link-status from iris-api while a flow is active
   useEffect(() => {
-    if (!commandId || step === 'idle' || step === 'completed' || step === 'stopped') {
-      stopPolling();
-      return;
-    }
+    if (!user || step === 'idle' || step === 'completed' || step === 'stopped') return;
 
-    pollRef.current = setInterval(async () => {
-      const { data } = await supabase
-        .from('automation_commands')
-        .select('status')
-        .eq('id', commandId)
-        .single();
-
-      if (data?.status) {
+    const interval = setInterval(async () => {
+      try {
+        const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/link-status`);
+        if (!r.ok) return;
+        const data = await r.json();
         const s = data.status as LinkStep;
         setStep(s);
-        if (s === 'completed' || s === 'stopped') {
-          stopPolling();
-          if (s === 'stopped') {
-            setError('The link process stopped unexpectedly. Please try again.');
-          }
+        if (s === 'stopped') {
+          setError('The link process stopped unexpectedly. Please try again.');
         }
-      }
+      } catch {}
     }, 3000);
 
-    return stopPolling;
-  }, [commandId, step]);
+    return () => clearInterval(interval);
+  }, [user, step]);
 
   const startLinking = useCallback(async (phoneNumber: string) => {
     if (!user) return;
     setLoading(true);
     setError(null);
-
-    // Cancel any stale link_account commands so the Android always picks up the new one
-    await supabase
-      .from('automation_commands')
-      .update({ status: 'stopped' })
-      .eq('user_id', user.id)
-      .eq('action', 'link_account')
-      .in('status', ['pending', 'running', 'awaiting_phone_otp', 'awaiting_email_otp']);
-
-    const { data, error: err } = await supabase
-      .from('automation_commands')
-      .insert({
-        user_id: user.id,
-        action: 'link_account',
-        status: 'pending',
-        payload: { phone_number: phoneNumber },
-      })
-      .select('id')
-      .single();
-
-    if (err || !data) {
+    try {
+      const r = await fetch(
+        `${API_URL}/instances/${INSTANCE_ID}/link?user_id=${encodeURIComponent(user.id)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone_number: phoneNumber }),
+        }
+      );
+      if (r.ok) {
+        setStep('pending');
+      } else {
+        setError('Failed to send link request. Please try again.');
+      }
+    } catch {
       setError('Failed to send link request. Please try again.');
-      setLoading(false);
-      return;
     }
-
-    setCommandId(data.id);
-    setStep('pending');
     setLoading(false);
   }, [user]);
 
@@ -93,27 +67,26 @@ export function useLinkAccount() {
     if (!user) return;
     setLoading(true);
     setError(null);
-
-    const action = type === 'phone' ? 'submit_phone_otp' : 'submit_email_otp';
-    const { error: err } = await supabase
-      .from('automation_commands')
-      .insert({
-        user_id: user.id,
-        action,
-        status: 'pending',
-        payload: { code },
-      });
-
-    if (err) {
+    try {
+      const r = await fetch(
+        `${API_URL}/instances/${INSTANCE_ID}/otp?user_id=${encodeURIComponent(user.id)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, code }),
+        }
+      );
+      if (!r.ok) {
+        setError('Failed to submit code. Please try again.');
+      }
+    } catch {
       setError('Failed to submit code. Please try again.');
     }
     setLoading(false);
   }, [user]);
 
   const reset = useCallback(() => {
-    stopPolling();
     setStep('idle');
-    setCommandId(null);
     setError(null);
     setLoading(false);
   }, []);
