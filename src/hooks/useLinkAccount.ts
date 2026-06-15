@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 export type LinkStep =
   | 'idle'
   | 'pending'
+  | 'signing_out'
   | 'running'
   | 'awaiting_phone_otp'
   | 'awaiting_email_otp'
@@ -18,6 +19,7 @@ export function useLinkAccount() {
   const [step, setStep] = useState<LinkStep>('idle');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [didSignOut, setDidSignOut] = useState(false);
 
   // Poll link-status from iris-api while a flow is active
   useEffect(() => {
@@ -29,6 +31,7 @@ export function useLinkAccount() {
         if (!r.ok) return;
         const data = await r.json();
         const s = data.status as LinkStep;
+        if (s === 'signing_out') setDidSignOut(true);
         setStep(s);
         if (s === 'stopped') {
           setError('The link process stopped unexpectedly. Please try again.');
@@ -89,7 +92,8 @@ export function useLinkAccount() {
     setStep('idle');
     setError(null);
     setLoading(false);
+    setDidSignOut(false);
   }, []);
 
-  return { step, loading, error, startLinking, submitOtp, reset };
+  return { step, loading, error, didSignOut, startLinking, submitOtp, reset };
 }

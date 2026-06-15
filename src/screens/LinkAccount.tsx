@@ -93,18 +93,19 @@ function Spinner({ size = 20 }: { size?: number }) {
 
 function stepLabel(step: LinkStep): string {
   switch (step) {
-    case 'pending': return 'Sending request to IRIS...';
-    case 'running': return 'IRIS is navigating Hinge login...';
+    case 'pending':            return 'Sending request to IRIS...';
+    case 'signing_out':        return 'Signing out existing Hinge session...';
+    case 'running':            return 'IRIS is navigating Hinge login...';
     case 'awaiting_phone_otp': return 'Waiting for SMS code...';
     case 'awaiting_email_otp': return 'Waiting for email code...';
-    default: return '';
+    default:                   return '';
   }
 }
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function LinkAccount({ onBack }: { onBack?: () => void }) {
-  const { step, loading, error, startLinking, submitOtp, reset } = useLinkAccount();
+  const { step, loading, error, didSignOut, startLinking, submitOtp, reset } = useLinkAccount();
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [otpSubmitted, setOtpSubmitted] = useState(false);
@@ -271,8 +272,8 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
     );
   }
 
-  // ── Navigating: pending / running ────────────────────────────────────────
-  if (step === 'pending' || step === 'running') {
+  // ── Navigating: pending / signing_out / running ──────────────────────────
+  if (step === 'pending' || step === 'signing_out' || step === 'running') {
     return (
       <div style={{ position: 'relative', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {backBtn}
@@ -296,22 +297,29 @@ export default function LinkAccount({ onBack }: { onBack?: () => void }) {
 
           {/* Progress steps */}
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { label: 'Launching Hinge app',            done: true },
-              { label: 'Navigating to sign-in screen',   done: step === 'running' },
-              { label: 'Entering phone number',           done: false },
-              { label: 'Waiting for SMS code',            done: false },
-            ].map(({ label, done }, i) => (
+            {([
+              { label: 'Launching Hinge app',           done: true,                                          show: true },
+              { label: 'Signing out current session',   done: step === 'running',                            show: didSignOut, active: step === 'signing_out' },
+              { label: 'Navigating to sign-in screen',  done: step === 'running',                            show: true },
+              { label: 'Entering phone number',          done: false,                                         show: true },
+              { label: 'Waiting for SMS code',           done: false,                                         show: true },
+            ] as { label: string; done: boolean; show: boolean; active?: boolean }[])
+              .filter(s => s.show)
+              .map(({ label, done, active }, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                  background: done ? 'rgba(34,197,94,0.15)' : 'rgba(161,161,161,0.1)',
-                  border: `1.5px solid ${done ? '#22c55e' : 'var(--border)'}`,
+                  background: done ? 'rgba(34,197,94,0.15)' : active ? 'rgba(234,179,8,0.15)' : 'rgba(161,161,161,0.1)',
+                  border: `1.5px solid ${done ? '#22c55e' : active ? '#eab308' : 'var(--border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {done && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />}
+                  {done
+                    ? <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+                    : active
+                    ? <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308' }} />
+                    : null}
                 </div>
-                <span style={{ fontSize: 13, color: done ? 'var(--text)' : 'var(--text-secondary)', fontWeight: done ? 600 : 400 }}>
+                <span style={{ fontSize: 13, color: done ? 'var(--text)' : active ? '#eab308' : 'var(--text-secondary)', fontWeight: done || active ? 600 : 400 }}>
                   {label}
                 </span>
               </div>
