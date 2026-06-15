@@ -24,6 +24,8 @@ export function useAutomation() {
   const { user } = useAuth();
   const [status, setStatus] = useState<AutomationStatus>('idle');
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [phaseLabel, setPhaseLabel] = useState('');
 
   // On mount — sync status from last known heartbeat
   useEffect(() => {
@@ -33,20 +35,44 @@ export function useAutomation() {
     });
   }, [user]);
 
-  // Poll status while active or stopping
+  // Poll instance status while not idle
   useEffect(() => {
     if (!user || status === 'idle' || status === 'stopped') return;
-
     const interval = setInterval(async () => {
       const s = await fetchInstanceStatus();
       if (s === 'running') {
         setStatus('running');
       } else if (s === 'idle') {
         setStatus('idle');
+        setProgress(0);
+        setPhaseLabel('');
       }
-      // null / 404 → no heartbeat yet — keep current state (pending/stopping)
     }, 5000);
+    return () => clearInterval(interval);
+  }, [user, status]);
 
+  // Poll phase progress from broker events while active
+  useEffect(() => {
+    const active = status === 'running' || status === 'pending';
+    if (!user || !active) {
+      if (status === 'idle' || status === 'stopped') {
+        setProgress(0);
+        setPhaseLabel('');
+      }
+      return;
+    }
+    const fetchPhase = async () => {
+      try {
+        const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/phase`);
+        if (r.ok) {
+          const data = await r.json();
+          setProgress(data.progress ?? 0);
+          setPhaseLabel(data.label ?? '');
+        }
+      } catch {}
+    };
+    fetchPhase();
+    const interval = setInterval(fetchPhase, 3000);
     return () => clearInterval(interval);
   }, [user, status]);
 
@@ -63,6 +89,8 @@ export function useAutomation() {
         }
       );
       if (r.ok) {
+        setProgress(0);
+        setPhaseLabel('');
         setStatus('pending');
       } else {
         console.error('[IRIS] activate failed', r.status, await r.text());
@@ -88,8 +116,10 @@ export function useAutomation() {
     } catch (e) {
       console.error('[IRIS] stop error', e);
     }
+    setProgress(0);
+    setPhaseLabel('');
     setLoading(false);
   }, [user]);
 
-  return { status, loading, activate, stop };
+  return { status, loading, activate, stop, progress, phaseLabel };
 }

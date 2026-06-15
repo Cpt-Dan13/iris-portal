@@ -13,7 +13,7 @@ const DURATION_OPTIONS: { id: Duration; label: string; description: string }[] =
 ];
 
 export default function Activate() {
-  const { status, loading, activate, stop } = useAutomation();
+  const { status, loading, activate, stop, progress, phaseLabel } = useAutomation();
   const active = status === 'running' || status === 'pending';
   const stopping = status === 'stopping';
   const busy = active || stopping;
@@ -161,7 +161,8 @@ export default function Activate() {
               background: 'var(--card)',
               border: '1px solid var(--border)',
               borderRadius: 12,
-              overflow: 'hidden',
+              maxHeight: 260,
+              overflowY: 'auto',
               zIndex: 10,
               boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
             }}>
@@ -200,6 +201,33 @@ export default function Activate() {
           </>
         )}
       </div>
+
+      {/* Progress bar — only visible when active */}
+      {active && (
+        <div style={{ width: 280, marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+            <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {phaseLabel || 'Starting...'}
+            </span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div style={{
+            height: 8,
+            borderRadius: 9999,
+            border: '1px solid rgba(34,197,94,0.35)',
+            background: 'var(--progress-track, rgba(255,255,255,0.08))',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${progress}%`,
+              borderRadius: 9999,
+              background: 'linear-gradient(90deg, #16a34a, #22c55e)',
+              transition: 'width 1s ease-out',
+            }} />
+          </div>
+        </div>
+      )}
 
       {/* Button */}
       <button
