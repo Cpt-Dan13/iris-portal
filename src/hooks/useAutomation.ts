@@ -22,10 +22,32 @@ async function fetchInstanceStatus(): Promise<'running' | 'idle' | 'error' | nul
 
 export function useAutomation() {
   const { user } = useAuth();
-  const [status, setStatus] = useState<AutomationStatus>('idle');
+  const [status, setStatus] = useState<AutomationStatus>(() => {
+    const s = localStorage.getItem('iris_status') as AutomationStatus | null;
+    return s === 'running' || s === 'pending' ? s : 'idle';
+  });
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [phaseLabel, setPhaseLabel] = useState('');
+  const [progress, setProgress] = useState(() => Number(localStorage.getItem('iris_progress') ?? 0));
+  const [phaseLabel, setPhaseLabel] = useState(() => localStorage.getItem('iris_phase') ?? '');
+
+  // Persist active state to localStorage so navigation doesn't wipe the bar
+  useEffect(() => {
+    if (status === 'running' || status === 'pending') {
+      localStorage.setItem('iris_status', status);
+    } else {
+      localStorage.removeItem('iris_status');
+      localStorage.removeItem('iris_progress');
+      localStorage.removeItem('iris_phase');
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (progress > 0) localStorage.setItem('iris_progress', String(progress));
+  }, [progress]);
+
+  useEffect(() => {
+    if (phaseLabel) localStorage.setItem('iris_phase', phaseLabel);
+  }, [phaseLabel]);
 
   // On mount — sync status from last known heartbeat
   useEffect(() => {
