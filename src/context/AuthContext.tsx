@@ -28,26 +28,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [instanceId, setInstanceId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session?.user) {
-        try {
-          setInstanceId(await fetchInstanceId(data.session.user.id));
-        } catch {
-          setInstanceId(null);
-        }
-      }
       setLoading(false);
+      if (data.session?.user) {
+        fetchInstanceId(data.session.user.id).then(setInstanceId).catch(() => {});
+      }
     }).catch(() => setLoading(false));
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        try {
-          setInstanceId(await fetchInstanceId(session.user.id));
-        } catch {
-          setInstanceId(null);
-        }
+        fetchInstanceId(session.user.id).then(setInstanceId).catch(() => {});
       } else {
         setInstanceId(null);
       }
