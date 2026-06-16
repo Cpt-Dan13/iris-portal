@@ -31,15 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        setInstanceId(await fetchInstanceId(data.session.user.id));
+        try {
+          setInstanceId(await fetchInstanceId(data.session.user.id));
+        } catch {
+          setInstanceId(null);
+        }
       }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
-        setInstanceId(await fetchInstanceId(session.user.id));
+        try {
+          setInstanceId(await fetchInstanceId(session.user.id));
+        } catch {
+          setInstanceId(null);
+        }
       } else {
         setInstanceId(null);
       }
