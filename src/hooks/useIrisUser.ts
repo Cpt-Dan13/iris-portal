@@ -9,6 +9,7 @@ export interface IrisUser {
   email: string | null;
   phone: string | null;
   primary_photo: string | null;
+  instance_id: string | null;
   created_at: string;
 }
 
@@ -19,11 +20,12 @@ export function useIrisUser() {
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
+    const userId = user.id;
     async function fetch() {
       const { data } = await supabase
         .from('users')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (data) setIrisUser(data as IrisUser);

@@ -5,41 +5,46 @@ export type AutomationStatus = 'idle' | 'pending' | 'running' | 'stopping' | 'st
 export type Duration = '15mins' | '3hours' | '8hours' | '1day' | '3days' | '1week';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) ?? 'http://localhost:8000';
-const INSTANCE_ID = 'user_01';
-
-const LS_STATUS   = 'iris_status';
-const LS_PROGRESS = 'iris_progress';
-const LS_PHASE    = 'iris_phase';
-
-function clearAutomationStorage() {
-  localStorage.removeItem(LS_STATUS);
-  localStorage.removeItem(LS_PROGRESS);
-  localStorage.removeItem(LS_PHASE);
-}
-
-async function fetchInstanceStatus(): Promise<'running' | 'idle' | 'error' | null> {
-  try {
-    const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/status`);
-    if (r.status === 404) return null;
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.status ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export function useAutomation() {
-  const { user } = useAuth();
+  const { user, instanceId } = useAuth();
+
+  const lsStatus   = `iris_status_${instanceId}`;
+  const lsProgress = `iris_progress_${instanceId}`;
+  const lsPhase    = `iris_phase_${instanceId}`;
+
+  function clearAutomationStorage() {
+    localStorage.removeItem(lsStatus);
+    localStorage.removeItem(lsProgress);
+    localStorage.removeItem(lsPhase);
+  }
+
+  async function fetchInstanceStatus(): Promise<'running' | 'idle' | 'error' | null> {
+    if (!instanceId) return null;
+    try {
+      const r = await fetch(`${API_URL}/instances/${instanceId}/status`);
+      if (r.status === 404) return null;
+      if (!r.ok) return null;
+      const data = await r.json();
+      return data.status ?? null;
+    } catch {
+      return null;
+    }
+  }
 
   // Seed initial state from localStorage — survives navigation and page refresh
   const [status, setStatus] = useState<AutomationStatus>(() => {
-    const s = localStorage.getItem(LS_STATUS) as AutomationStatus | null;
+    if (!instanceId) return 'idle';
+    const s = localStorage.getItem(`iris_status_${instanceId}`) as AutomationStatus | null;
     return s === 'running' || s === 'pending' ? s : 'idle';
   });
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(() => Number(localStorage.getItem(LS_PROGRESS) ?? 0));
-  const [phaseLabel, setPhaseLabel] = useState(() => localStorage.getItem(LS_PHASE) ?? '');
+  const [progress, setProgress] = useState(() =>
+    instanceId ? Number(localStorage.getItem(`iris_progress_${instanceId}`) ?? 0) : 0
+  );
+  const [phaseLabel, setPhaseLabel] = useState(() =>
+    instanceId ? (localStorage.getItem(`iris_phase_${instanceId}`) ?? '') : ''
+  );
 
   // Consecutive idle responses before we trust the automation really stopped.
   // Prevents a brief gap between cycles from wiping everything.
@@ -47,25 +52,25 @@ export function useAutomation() {
 
   // On mount — confirm running status from heartbeat
   useEffect(() => {
-    if (!user) return;
+    if (!user || !instanceId) return;
     fetchInstanceStatus().then(s => {
       if (s === 'running') {
         setStatus('running');
-        localStorage.setItem(LS_STATUS, 'running');
+        localStorage.setItem(lsStatus, 'running');
       }
     });
-  }, [user]);
+  }, [user, instanceId]);
 
   // Poll status while active — requires 3 consecutive idle reads (~15s) before resetting
   useEffect(() => {
-    if (!user || status === 'idle' || status === 'stopped') return;
+    if (!user || !instanceId || status === 'idle' || status === 'stopped') return;
     idleCountRef.current = 0;
     const interval = setInterval(async () => {
       const s = await fetchInstanceStatus();
       if (s === 'running') {
         idleCountRef.current = 0;
         setStatus('running');
-        localStorage.setItem(LS_STATUS, 'running');
+        localStorage.setItem(lsStatus, 'running');
       } else if (s === 'idle') {
         idleCountRef.current++;
         if (idleCountRef.current >= 3) {
@@ -79,23 +84,23 @@ export function useAutomation() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [user, status]);
+  }, [user, instanceId, status]);
 
   // Poll phase from broker events while active — writes directly to localStorage
   useEffect(() => {
     const active = status === 'running' || status === 'pending';
-    if (!user || !active) return;
+    if (!user || !instanceId || !active) return;
     const fetchPhase = async () => {
       try {
-        const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/phase`);
+        const r = await fetch(`${API_URL}/instances/${instanceId}/phase`);
         if (r.ok) {
           const data = await r.json();
           const p: number = data.progress ?? 0;
           const l: string = data.label ?? '';
           setProgress(p);
           setPhaseLabel(l);
-          if (p > 0) localStorage.setItem(LS_PROGRESS, String(p));
-          if (l)    localStorage.setItem(LS_PHASE, l);
+          if (p > 0) localStorage.setItem(lsProgress, String(p));
+          if (l)    localStorage.setItem(lsPhase, l);
           // Natural completion — clear after a short delay so user sees 100%
           if (p >= 100) {
             setTimeout(() => {
@@ -111,14 +116,14 @@ export function useAutomation() {
     fetchPhase();
     const interval = setInterval(fetchPhase, 3000);
     return () => clearInterval(interval);
-  }, [user, status]);
+  }, [user, instanceId, status]);
 
   const activate = useCallback(async (duration: Duration) => {
-    if (!user) return;
+    if (!user || !instanceId) return;
     setLoading(true);
     try {
       const r = await fetch(
-        `${API_URL}/instances/${INSTANCE_ID}/start?user_id=${encodeURIComponent(user.id)}`,
+        `${API_URL}/instances/${instanceId}/start?user_id=${encodeURIComponent(user.id)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -126,9 +131,9 @@ export function useAutomation() {
         }
       );
       if (r.ok) {
-        localStorage.setItem(LS_STATUS, 'pending');
-        localStorage.setItem(LS_PROGRESS, '0');
-        localStorage.removeItem(LS_PHASE);
+        localStorage.setItem(lsStatus, 'pending');
+        localStorage.setItem(lsProgress, '0');
+        localStorage.removeItem(lsPhase);
         setProgress(0);
         setPhaseLabel('');
         setStatus('pending');
@@ -139,16 +144,16 @@ export function useAutomation() {
       console.error('[IRIS] activate error', e);
     }
     setLoading(false);
-  }, [user]);
+  }, [user, instanceId]);
 
   const stop = useCallback(async () => {
-    if (!user) return;
+    if (!user || !instanceId) return;
     setStatus('stopping');
     setLoading(true);
     clearAutomationStorage(); // explicit stop always clears immediately
     try {
       const r = await fetch(
-        `${API_URL}/instances/${INSTANCE_ID}/stop?user_id=${encodeURIComponent(user.id)}`,
+        `${API_URL}/instances/${instanceId}/stop?user_id=${encodeURIComponent(user.id)}`,
         { method: 'POST' }
       );
       if (!r.ok) {
@@ -160,7 +165,7 @@ export function useAutomation() {
     setProgress(0);
     setPhaseLabel('');
     setLoading(false);
-  }, [user]);
+  }, [user, instanceId]);
 
   return { status, loading, activate, stop, progress, phaseLabel };
 }

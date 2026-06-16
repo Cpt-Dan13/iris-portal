@@ -6,24 +6,43 @@ interface AuthContextValue {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  instanceId: string | null;
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function fetchInstanceId(userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('users')
+    .select('instance_id')
+    .eq('user_id', userId)
+    .single();
+  return data?.instance_id ?? null;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [instanceId, setInstanceId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      if (data.session?.user) {
+        setInstanceId(await fetchInstanceId(data.session.user.id));
+      }
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      if (session?.user) {
+        setInstanceId(await fetchInstanceId(session.user.id));
+      } else {
+        setInstanceId(null);
+      }
     });
 
     return () => listener.subscription.unsubscribe();
@@ -39,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, instanceId, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

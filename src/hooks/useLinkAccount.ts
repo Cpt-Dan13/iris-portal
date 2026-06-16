@@ -12,10 +12,9 @@ export type LinkStep =
   | 'stopped';
 
 const API_URL = (import.meta.env.VITE_API_URL as string) ?? 'http://localhost:8000';
-const INSTANCE_ID = 'user_01';
 
 export function useLinkAccount() {
-  const { user } = useAuth();
+  const { user, instanceId } = useAuth();
   const [step, setStep] = useState<LinkStep>('idle');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,11 +22,11 @@ export function useLinkAccount() {
 
   // Poll link-status from iris-api while a flow is active
   useEffect(() => {
-    if (!user || step === 'idle' || step === 'completed' || step === 'stopped') return;
+    if (!user || !instanceId || step === 'idle' || step === 'completed' || step === 'stopped') return;
 
     const interval = setInterval(async () => {
       try {
-        const r = await fetch(`${API_URL}/instances/${INSTANCE_ID}/link-status`);
+        const r = await fetch(`${API_URL}/instances/${instanceId}/link-status`);
         if (!r.ok) return;
         const data = await r.json();
         const s = data.status as LinkStep;
@@ -40,15 +39,15 @@ export function useLinkAccount() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [user, step]);
+  }, [user, instanceId, step]);
 
   const startLinking = useCallback(async (phoneNumber: string) => {
-    if (!user) return;
+    if (!user || !instanceId) return;
     setLoading(true);
     setError(null);
     try {
       const r = await fetch(
-        `${API_URL}/instances/${INSTANCE_ID}/link?user_id=${encodeURIComponent(user.id)}`,
+        `${API_URL}/instances/${instanceId}/link?user_id=${encodeURIComponent(user.id)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -64,15 +63,15 @@ export function useLinkAccount() {
       setError('Failed to send link request. Please try again.');
     }
     setLoading(false);
-  }, [user]);
+  }, [user, instanceId]);
 
   const submitOtp = useCallback(async (type: 'phone' | 'email', code: string) => {
-    if (!user) return;
+    if (!user || !instanceId) return;
     setLoading(true);
     setError(null);
     try {
       const r = await fetch(
-        `${API_URL}/instances/${INSTANCE_ID}/otp?user_id=${encodeURIComponent(user.id)}`,
+        `${API_URL}/instances/${instanceId}/otp?user_id=${encodeURIComponent(user.id)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -86,7 +85,7 @@ export function useLinkAccount() {
       setError('Failed to submit code. Please try again.');
     }
     setLoading(false);
-  }, [user]);
+  }, [user, instanceId]);
 
   const reset = useCallback(() => {
     setStep('idle');
