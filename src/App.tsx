@@ -9,6 +9,7 @@ import Prospective from './screens/Prospective';
 import Reports from './screens/Reports';
 import ProfileDetail from './screens/ProfileDetail';
 import Login from './screens/Login';
+import MachineSelect from './screens/MachineSelect';
 import Monitoring from './screens/Monitoring';
 import UserProfile from './screens/UserProfile';
 import LinkAccount from './screens/LinkAccount';
@@ -85,8 +86,12 @@ function Loader() {
 
 function AppRoutes() {
   const { user, loading } = useAuth();
+  const [machineSelected, setMachineSelected] = useState(false);
+
   if (loading) return <Loader />;
-  return user ? <Dashboard /> : <Login />;
+  if (!user) return <Login />;
+  if (!machineSelected) return <MachineSelect onSelect={() => setMachineSelected(true)} />;
+  return <Dashboard />;
 }
 
 export default function App() {
