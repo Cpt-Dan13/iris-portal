@@ -1,4 +1,4 @@
-import { Crown, Medal, ChevronDown, ChevronUp } from 'lucide-react';
+import { Crown, Medal, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import PersonalityTag from '../components/PersonalityTag';
 import type { Profile } from '../types';
@@ -87,6 +87,19 @@ export default function Ranking({ profiles, onSelectProfile }: RankingProps) {
           ))}
         </div>
       </div>
+
+      {/* Empty state */}
+      {sorted.length === 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+            <Sparkles size={32} style={{ color: '#c084fc' }} />
+          </div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No profiles ranked yet</h3>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
+            Run the automation to start discovering profiles. Rankings will appear here once data comes in.
+          </p>
+        </div>
+      )}
 
       {/* Hero card */}
       {hero && (

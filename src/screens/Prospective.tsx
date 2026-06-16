@@ -7,7 +7,7 @@ import { useMatchedProfiles } from '../hooks/useMatchedProfiles';
 import type { MatchedProfile } from '../hooks/useMatchedProfiles';
 import MatchedProfileDetail from './MatchedProfileDetail';
 import MatchedInsightsModal from '../components/MatchedInsightsModal';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Heart, MessageCircle } from 'lucide-react';
 
 type Tab = 'prospective' | 'matches';
 type ConversationStatus = 'active' | 'ghosted' | 'archived';
@@ -296,8 +296,14 @@ export default function Prospective() {
               </p>
 
               {profiles.length === 0 ? (
-                <div style={{ background: 'var(--card)', borderRadius: 16, padding: '60px 24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}>
-                  No matched profiles yet.
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
+                  <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                    <Heart size={32} style={{ color: '#c084fc' }} />
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No matches yet</h3>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
+                    Profiles that match back will appear here ranked by prospective score.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -370,8 +376,14 @@ export default function Prospective() {
               </p>
 
               {profiles.length === 0 ? (
-                <div style={{ background: 'var(--card)', borderRadius: 16, padding: '60px 24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}>
-                  No matches yet. Keep the automation running!
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
+                  <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                    <MessageCircle size={32} style={{ color: '#22c55e' }} />
+                  </div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No conversations yet</h3>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
+                    Keep the automation running to start building connections. Matches will show up here.
+                  </p>
                 </div>
               ) : (
                 STATUS_GROUPS.map(status => {

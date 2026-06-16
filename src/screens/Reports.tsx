@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, Area, AreaChart,
 } from 'recharts';
 import { useState } from 'react';
-import { Crown, Medal } from 'lucide-react';
+import { Crown, Medal, BarChart2 } from 'lucide-react';
 import { REPORT_DATA } from '../data/mockData';
 import type { Profile } from '../types';
 
@@ -79,6 +79,19 @@ export default function Reports({ profiles, onSelectProfile }: ReportsProps) {
           ))}
         </div>
       </div>
+
+      {/* Empty state */}
+      {profiles.length === 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', textAlign: 'center' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+            <BarChart2 size={32} style={{ color: '#c084fc' }} />
+          </div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No report data yet</h3>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
+            Reports will populate as the automation runs and profiles are discovered.
+          </p>
+        </div>
+      )}
 
       {/* Top 5 lists */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: 24 }}>
