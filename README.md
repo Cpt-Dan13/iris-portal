@@ -20,9 +20,10 @@ The web dashboard for [IRIS](../iris) — a browser-based interface for monitori
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js (App Router) |
+| Framework | Vite + React (TypeScript) — state-driven screens, no router |
 | Styling | Tailwind CSS |
 | Auth + Database | Supabase |
+| Control plane | [iris-api](https://github.com/Cpt-Dan13/iris-api) (FastAPI, deployed separately on Render) |
 | Charts | Recharts |
 | Icons | Lucide React |
 
@@ -37,43 +38,64 @@ The web dashboard for [IRIS](../iris) — a browser-based interface for monitori
    npm install
    ```
 
-2. **Environment variables** — create `.env.local` in the root:
+2. **Environment variables** — create `.env` in the root:
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_API_URL=http://localhost:8000
+   VITE_LOG_WS_URL=wss://iris-logs.ngrok-free.app
+   VITE_NOVNC_URL=https://iris-novnc.ngrok-free.app/vnc_lite.html?autoconnect=true&resize=scale
    ```
+   `VITE_API_URL` should point at a running [iris-api](../iris-api) instance — a local one (`http://localhost:8000`) for dev, or the deployed Render URL.
 
 3. **Run locally**
    ```bash
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000)
+   Open [http://localhost:5173](http://localhost:5173)
 
 ---
 
 ## Project Structure
 
 ```
-app/
-  (auth)/
-    login.tsx         — Login page
-  (dashboard)/
-    layout.tsx        — Sidebar layout wrapper
-    page.tsx          — Ranking screen (home)
-    prospective/      — Prospective matches
-    profile/[id]/     — Profile detail
-    reports/          — Analytics
-    activate/         — Automation control
-components/
-  ProfileCard.tsx     — Match card with level badge
-  ScoreBadge.tsx      — Circular score indicator
-  PersonalityTag.tsx  — Trait badge
-  TakeOverModal.tsx   — Conversation + insights overlay
-  Sidebar.tsx         — Fixed left navigation
-lib/
-  supabase.ts         — Supabase client
-  types.ts            — Shared TypeScript types
+src/
+  App.tsx              — Top-level state machine; switches between screens (no router)
+  main.tsx             — Entry point
+  screens/
+    Login.tsx           — Auth login
+    Register.tsx        — Account registration
+    MachineSelect.tsx    — Pick an IRIS instance
+    LinkAccount.tsx       — Link a Hinge/IRIS instance (OTP flow)
+    Ranking.tsx          — Liked profiles ranked by allure score (home)
+    Prospective.tsx       — Active matches grouped by engagement level
+    ProfileDetail.tsx      — Full liked-profile detail view
+    MatchedProfileDetail.tsx — Full matched-profile detail view
+    Reports.tsx           — Historical analytics
+    Activate.tsx          — Automation start/stop control
+    Monitoring.tsx        — Live noVNC + log stream view
+    UserProfile.tsx        — Account/user settings
+  components/
+    Sidebar.tsx           — Fixed left navigation
+    ScoreBadge.tsx         — Circular score indicator
+    PersonalityTag.tsx      — Trait badge
+    TakeOverModal.tsx        — Conversation + insights overlay
+    MatchedInsightsModal.tsx  — Matched-profile insights overlay
+  hooks/
+    useProfiles.ts / useProfile.ts   — Liked profiles (list + detail)
+    useMatchedProfiles.ts             — Matched profiles
+    useAutomation.ts                   — Start/stop automation via iris-api
+    useLinkAccount.ts                   — Link-flow polling via iris-api
+    useIrisUser.ts / useMobile.ts        — Auth/user + responsive helpers
+  lib/
+    supabase.ts           — Supabase client
+    transforms.ts           — Supabase row → UI type mapping (incl. photo URL resolution)
+    avatars.ts               — Placeholder avatar resolution
+  context/
+    AuthContext.tsx        — Auth state provider
+    ThemeContext.tsx         — Light/dark theme provider
+  types/index.ts          — Shared TypeScript types
 ```
 
 ---
@@ -81,5 +103,6 @@ lib/
 ## Related Projects
 
 - [`iris`](../iris) — The Android automation engine (React Native + Kotlin Accessibility Service)
-- [`SCALE.md`](../iris/SCALE.md) — Full scaling architecture documentation
-- [`ROADMAP.md`](../iris/ROADMAP.md) — Step-by-step build plan
+- [`iris-api`](../iris-api) — FastAPI control plane and event relay (RabbitMQ ↔ Supabase), sits between this portal and the IRIS Android instances
+- [`docs/SCALE.md`](../iris/docs/SCALE.md) — Full scaling architecture documentation
+- [`docs/ROADMAP.md`](../iris/docs/ROADMAP.md) — Step-by-step build plan

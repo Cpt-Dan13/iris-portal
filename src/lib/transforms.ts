@@ -1,5 +1,13 @@
 import type { Profile, ProfileRow, ConversationMessage, DetailRow, PersonalityTag } from '../types';
 
+const API_URL = (import.meta.env.VITE_API_URL as string) ?? 'http://localhost:8000';
+
+export function resolvePhotoUrl(photo: string | null | undefined): string {
+  if (!photo) return '';
+  const filename = photo.split('/').pop();
+  return `${API_URL}/photos/${filename}`;
+}
+
 const TAG_COLORS: Record<string, string> = {
   playful: '#ec4899',
   adventurous: '#f59e0b',
@@ -46,7 +54,7 @@ export function transformProfile(
     id: p.id,
     name: p.name,
     age: p.age,
-    photo: p.photo ?? '',
+    photo: resolvePhotoUrl(p.photo),
     location: p.location,
     bio: p.bio ?? '',
     allureScore: p.allure_score,

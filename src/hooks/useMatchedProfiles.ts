@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { resolvePhotoUrl } from '../lib/transforms';
 
 export interface MatchedProfile {
   id: string;
@@ -48,7 +49,7 @@ export function useMatchedProfiles() {
           id: row.id,
           name: row.name,
           age: row.age,
-          photo: row.photo,
+          photo: resolvePhotoUrl(row.photo),
           allureScore: row.allure_score,
           prospectiveScore: row.prospective_score,
           prospectiveLevel: row.prospective_level,
